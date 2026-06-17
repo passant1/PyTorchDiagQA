@@ -2,6 +2,8 @@
 
 自然语言处理课程的实验代码与期末大作业（PyTorch 智能报错诊断问答系统）。
 
+> 仓库地址：<https://github.com/passant1/PyTorchDiagQA>
+
 ---
 
 ## 目录结构
