@@ -245,13 +245,18 @@ copy config.yaml dist\PyTorchDiag\
 
 打包后目录结构：
 ```
-dist/PyTorchDiag/
-├── PyTorchDiag.exe    # 主程序
-├── config.yaml        # 配置文件
-├── data/              # 数据文件
-├── assets/            # 资源文件
-└── ...                # Python 运行时
+dist/
+├── PyTorchDiag.exe          # EXE 步骤产物（中间产物，缺少 data/，❌ 不能直接运行）
+└── PyTorchDiag/             # COLLECT 步骤产物 ← 分发用这个文件夹
+    ├── PyTorchDiag.exe      # 主程序（与上面那个 MD5 相同）
+    ├── _internal/           # Python 运行时 + 所有依赖
+    ├── data/                # FAQ、知识图谱 JSON 等数据文件
+    └── config.yaml          # 配置文件
 ```
+
+> **说明**：`dist/` 下会出现两个同名 exe，它们是同一个文件（MD5 一样），区别在于分发方式：
+> - `dist/PyTorchDiag.exe` — PyInstaller 的 **EXE 步骤**产物，exe 内部只嵌了 PKG，找不到 `data/` 文件夹，无法运行，属于中间产物，可以删除。
+> - `dist/PyTorchDiag/` 整个文件夹 — **COLLECT 步骤**产物，exe + 运行时 + 数据文件收在一起，**要发给别人的就是这个文件夹**。
 
 ## 常见问题
 
