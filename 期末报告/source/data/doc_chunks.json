@@ -1,0 +1,779 @@
+{
+  "version": "1.2",
+  "description": "RAG evidence chunks generated from PyTorch KG and FAQ.",
+  "chunks": [
+    {
+      "id": "kg_P001",
+      "title": "CUDA不可用",
+      "category": "CUDA不可用",
+      "source": "KnowledgeGraph",
+      "source_doc": "data/pytorch_kg.json",
+      "url": "https://pytorch.org/get-started/locally/",
+      "text": "torch.cuda.is_available() 返回 False，PyTorch 无法检测到 GPU。\nAPI: torch.cuda.is_available - 检查 CUDA 是否可用，返回 bool 值。\nAPI: torch.version.cuda - 返回 PyTorch 编译时使用的 CUDA 版本号。\nCause: 未安装NVIDIA显卡驱动 - 系统未安装 NVIDIA 显卡驱动，或驱动版本过旧不兼容当前 CUDA 版本。\nCause: PyTorch安装的是CPU版本 - 使用 pip install torch 默认安装的是 CPU 版本，不支持 CUDA。\nSolution: 检查CUDA驱动和PyTorch版本 - 使用 nvidia-smi 检查驱动，使用 torch.version.cuda 检查 PyTorch CUDA 版本。确保两者兼容。\nSolution: 重新安装PyTorch CUDA版本 - 使用 pip install torch --index-url https://download.pytorch.org/whl/cu118 安装 CUDA 版本。\nCommand: 检查CUDA驱动 - 查看 NVIDIA 驱动版本、CUDA 版本和 GPU 显存使用情况。\nCommandText: nvidia-smi\nCommand: 检查PyTorch版本 - 一键检查 PyTorch 版本、CUDA 版本和 GPU 可用性。\nCommandText: python -c \"import torch; print(torch.__version__); print(torch.version.cuda); print(torch.cuda.is_available())\"\nExample: 检查CUDA可用性 - 检查 PyTorch 是否能检测到 GPU 及 CUDA 版本。\nSource: PyTorch Get Started Locally - PyTorch 官方安装指南，包含 pip/conda 安装命令和 CUDA 版本选择。\nSimilar: PyTorch安装版本问题 - 安装的 PyTorch 是 CPU 版本而非 CUDA 版本，或版本与 CUDA 不兼容。\nRelated: CUDA - NVIDIA 的并行计算平台和 API，PyTorch GPU 加速的基础。",
+      "keywords": [
+        "CUDA不可用",
+        "CUDA 不可用",
+        "cuda 不可用",
+        "CUDA not available",
+        "GPU 不可用",
+        "torch.cuda.is_available",
+        "torch.version.cuda",
+        "未安装NVIDIA显卡驱动",
+        "PyTorch安装的是CPU版本",
+        "检查CUDA驱动和PyTorch版本",
+        "重新安装PyTorch CUDA版本",
+        "检查CUDA驱动",
+        "检查PyTorch版本",
+        "检查CUDA可用性",
+        "PyTorch Get Started Locally",
+        "PyTorch安装版本问题",
+        "CUDA"
+      ]
+    },
+    {
+      "id": "kg_P002",
+      "title": "CUDA显存不足",
+      "category": "CUDA显存不足",
+      "source": "KnowledgeGraph",
+      "source_doc": "data/pytorch_kg.json",
+      "url": "https://pytorch.org/docs/stable/torch_cuda_memory.html",
+      "text": "训练或推理时出现 CUDA out of memory 错误，GPU 显存耗尽。\nAPI: torch.cuda.empty_cache - 释放 PyTorch 缓存的显存，不释放 tensor 占用。\nAPI: torch.cuda.memory_allocated - 返回当前已分配的 GPU 显存字节数。\nAPI: torch.cuda.memory_summary - 打印详细的 CUDA 显存使用报告。\nCause: batch_size过大 - 单次迭代加载的数据量超过 GPU 显存容量。\nCause: 显存泄漏 - 训练循环中 tensor 未及时释放，loss 未 detach，或全局变量持有 tensor 引用。\nSolution: 减小batch_size - 将 batch_size 减小到 GPU 显存能容纳的大小。建议从 8 或 16 开始调优。\nSolution: 清理GPU显存 - 调用 torch.cuda.empty_cache() 清理 PyTorch 的显存缓存。在训练循环中及时 del 不再使用的 tensor。\nSolution: 使用AMP混合精度训练 - 使用 torch.cuda.amp.autocast() 和 GradScaler 实现混合精度训练，显著减少显存占用。\nSolution: gradient_checkpointing - 使用 torch.utils.checkpoint 进行梯度检查点，以计算换显存。\nError: CUDA out of memory - RuntimeError: CUDA out of memory. Tried to allocate ... GPU 显存已耗尽。\nSource: CUDA Memory Management - PyTorch CUDA 显存管理官方文档。\nRelated: pin_memory - 将数据锁定在 CPU 固定内存中，加速数据传输到 GPU。GPU 训练时建议 True。\nRelated: AMP自动混合精度 - 自动混合精度训练，使用 float16 和 float32 混合计算，减少显存占用。\nExample: 使用AMP混合精度训练 - 自动混合精度训练示例，减少显存占用。",
+      "keywords": [
+        "CUDA显存不足",
+        "CUDA OOM",
+        "out of memory",
+        "显存不足",
+        "OOM",
+        "torch.cuda.empty_cache",
+        "torch.cuda.memory_allocated",
+        "torch.cuda.memory_summary",
+        "batch_size过大",
+        "显存泄漏",
+        "减小batch_size",
+        "清理GPU显存",
+        "使用AMP混合精度训练",
+        "gradient_checkpointing",
+        "CUDA out of memory",
+        "CUDA Memory Management",
+        "pin_memory",
+        "AMP自动混合精度",
+        "使用AMP混合精度训练"
+      ]
+    },
+    {
+      "id": "kg_P003",
+      "title": "PyTorch安装版本问题",
+      "category": "PyTorch安装版本问题",
+      "source": "KnowledgeGraph",
+      "source_doc": "data/pytorch_kg.json",
+      "url": "https://pytorch.org/get-started/locally/",
+      "text": "安装的 PyTorch 是 CPU 版本而非 CUDA 版本，或版本与 CUDA 不兼容。\nCause: PyTorch安装的是CPU版本 - 使用 pip install torch 默认安装的是 CPU 版本，不支持 CUDA。\nSolution: 重新安装PyTorch CUDA版本 - 使用 pip install torch --index-url https://download.pytorch.org/whl/cu118 安装 CUDA 版本。\nCommand: 安装PyTorch CUDA版本 - 安装 CUDA 11.8 版本的 PyTorch。请根据实际 CUDA 版本选择合适的 index-url。\nCommandText: pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118\nSource: PyTorch Get Started Locally - PyTorch 官方安装指南，包含 pip/conda 安装命令和 CUDA 版本选择。\nSimilar: CUDA不可用 - torch.cuda.is_available() 返回 False，PyTorch 无法检测到 GPU。\nRelated: CUDA - NVIDIA 的并行计算平台和 API，PyTorch GPU 加速的基础。",
+      "keywords": [
+        "PyTorch安装版本问题",
+        "安装版本问题",
+        "CPU 版本",
+        "版本不兼容",
+        "PyTorch安装的是CPU版本",
+        "重新安装PyTorch CUDA版本",
+        "安装PyTorch CUDA版本",
+        "PyTorch Get Started Locally",
+        "CUDA不可用",
+        "CUDA"
+      ]
+    },
+    {
+      "id": "kg_P004",
+      "title": "DataLoader参数问题",
+      "category": "DataLoader参数问题",
+      "source": "KnowledgeGraph",
+      "source_doc": "data/pytorch_kg.json",
+      "url": "https://pytorch.org/docs/stable/data.html",
+      "text": "DataLoader 参数设置不当导致数据加载效率低或出错。\nAPI: torch.utils.data.DataLoader - PyTorch 数据加载器，支持批量加载、多进程、数据打乱。\nParameter: num_workers - DataLoader 参数，指定数据加载使用的子进程数量。0 表示主进程加载。\nParameter: batch_size - 每次迭代加载的样本数量。过大会导致 OOM，过小会影响训练效率。\nParameter: pin_memory - 将数据锁定在 CPU 固定内存中，加速数据传输到 GPU。GPU 训练时建议 True。\nParameter: shuffle - DataLoader 参数，是否在每个 epoch 开始时打乱数据顺序。\nSource: torch.utils.data Documentation - DataLoader 和 Dataset 的官方 API 文档。\nExample: DataLoader基本用法 - DataLoader 基本使用示例。\nSimilar: DataLoader多进程问题 - DataLoader 使用多进程(num_workers>0)时的兼容性问题，尤其在 Windows 上。\nCause: DataLoader参数理解不足 - 不清楚 num_workers、batch_size、shuffle、pin_memory 等参数的作用，容易把性能问题误认为模型或 CUDA 错误。\nSolution: 按环境设置DataLoader参数 - 先用 num_workers=0 验证数据集逻辑；Linux 可逐步增大到 2、4、8，Windows 或打包 exe 场景优先使用 0，并确认主入口有 if __name__ == \"__main__\" 保护。",
+      "keywords": [
+        "DataLoader参数问题",
+        "DataLoader 参数",
+        "batch_size 问题",
+        "torch.utils.data.DataLoader",
+        "num_workers",
+        "batch_size",
+        "pin_memory",
+        "shuffle",
+        "torch.utils.data Documentation",
+        "DataLoader基本用法",
+        "DataLoader多进程问题",
+        "DataLoader参数理解不足",
+        "按环境设置DataLoader参数"
+      ]
+    },
+    {
+      "id": "kg_P005",
+      "title": "DataLoader多进程问题",
+      "category": "DataLoader多进程问题",
+      "source": "KnowledgeGraph",
+      "source_doc": "data/pytorch_kg.json",
+      "url": "https://pytorch.org/docs/stable/data.html",
+      "text": "DataLoader 使用多进程(num_workers>0)时的兼容性问题，尤其在 Windows 上。\nAPI: torch.utils.data.DataLoader - PyTorch 数据加载器，支持批量加载、多进程、数据打乱。\nParameter: num_workers - DataLoader 参数，指定数据加载使用的子进程数量。0 表示主进程加载。\nCause: Windows多进程限制 - Windows 的 multiprocessing 机制与 Linux 不同，DataLoader 多进程需要特殊处理。\nSolution: Windows下设置num_workers=0 - 在 Windows 系统上，将 DataLoader 的 num_workers 设置为 0，或使用 if __name__=='__main__' 保护。\nError: BrokenPipeError in DataLoader - Windows 上 DataLoader 多进程使用时可能触发 BrokenPipeError。\nSource: torch.utils.data Documentation - DataLoader 和 Dataset 的官方 API 文档。\nSimilar: DataLoader参数问题 - DataLoader 参数设置不当导致数据加载效率低或出错。",
+      "keywords": [
+        "DataLoader多进程问题",
+        "多进程问题",
+        "BrokenPipeError",
+        "multiprocessing",
+        "torch.utils.data.DataLoader",
+        "num_workers",
+        "Windows多进程限制",
+        "Windows下设置num_workers=0",
+        "BrokenPipeError in DataLoader",
+        "torch.utils.data Documentation",
+        "DataLoader参数问题"
+      ]
+    },
+    {
+      "id": "kg_P006",
+      "title": "模型保存问题",
+      "category": "模型保存问题",
+      "source": "KnowledgeGraph",
+      "source_doc": "data/pytorch_kg.json",
+      "url": "https://pytorch.org/tutorials/beginner/saving_loading_models.html",
+      "text": "如何正确保存 PyTorch 模型，包括整个模型和 state_dict 的区别。\nAPI: torch.save - 将对象序列化保存到文件，底层使用 pickle。\nSolution: 使用state_dict保存模型 - 推荐使用 torch.save(model.state_dict(), 'model.pth') 而非保存整个模型。\nRelated: state_dict - PyTorch 模型的状态字典，存储模型各层的参数（权重和偏置）到 tensor 的映射。\nSource: Saving and Loading Models Tutorial - 官方模型保存与加载教程。\nExample: 保存和加载模型state_dict - 使用 state_dict 保存和加载模型。\nSimilar: 模型加载问题 - 如何正确加载 PyTorch 模型，包括跨设备加载和 map_location 的使用。",
+      "keywords": [
+        "模型保存问题",
+        "保存模型",
+        "torch.save",
+        "模型保存",
+        "torch.save",
+        "使用state_dict保存模型",
+        "state_dict",
+        "Saving and Loading Models Tutorial",
+        "保存和加载模型state_dict",
+        "模型加载问题"
+      ]
+    },
+    {
+      "id": "kg_P007",
+      "title": "模型加载问题",
+      "category": "模型加载问题",
+      "source": "KnowledgeGraph",
+      "source_doc": "data/pytorch_kg.json",
+      "url": "https://pytorch.org/tutorials/beginner/saving_loading_models.html",
+      "text": "如何正确加载 PyTorch 模型，包括跨设备加载和 map_location 的使用。\nAPI: torch.load - 从文件加载序列化的对象，支持 map_location 和 weights_only 参数。\nAPI: model.load_state_dict - 将 state_dict 加载到模型中，支持 strict 参数控制是否严格匹配。\nParameter: map_location - torch.load 参数，指定将模型加载到哪个设备（CPU/GPU）。\nSolution: 使用map_location跨设备加载 - torch.load('model.pth', map_location='cpu') 将 GPU 训练的模型加载到 CPU。\nSource: Saving and Loading Models Tutorial - 官方模型保存与加载教程。\nSimilar: 模型保存问题 - 如何正确保存 PyTorch 模型，包括整个模型和 state_dict 的区别。\nSimilar: state_dict不匹配 - 加载模型时 state_dict 的 keys 不匹配，包括 Missing keys 和 Unexpected keys。",
+      "keywords": [
+        "模型加载问题",
+        "加载模型",
+        "torch.load",
+        "模型加载",
+        "torch.load",
+        "model.load_state_dict",
+        "map_location",
+        "使用map_location跨设备加载",
+        "Saving and Loading Models Tutorial",
+        "模型保存问题",
+        "state_dict不匹配"
+      ]
+    },
+    {
+      "id": "kg_P008",
+      "title": "state_dict不匹配",
+      "category": "state_dict不匹配",
+      "source": "KnowledgeGraph",
+      "source_doc": "data/pytorch_kg.json",
+      "url": "https://pytorch.org/tutorials/beginner/saving_loading_models.html",
+      "text": "加载模型时 state_dict 的 keys 不匹配，包括 Missing keys 和 Unexpected keys。\nAPI: model.load_state_dict - 将 state_dict 加载到模型中，支持 strict 参数控制是否严格匹配。\nCause: 模型结构变更 - 保存 state_dict 后修改了模型定义（增删层），导致加载时 keys 不匹配。\nSolution: 设置strict=False加载部分权重 - model.load_state_dict(state_dict, strict=False) 允许部分加载，忽略不匹配的 keys。\nError: Error(s) in loading state_dict - 加载 state_dict 时出现 key 不匹配错误，Missing keys 或 Unexpected keys。\nRelated: state_dict - PyTorch 模型的状态字典，存储模型各层的参数（权重和偏置）到 tensor 的映射。\nSource: Saving and Loading Models Tutorial - 官方模型保存与加载教程。",
+      "keywords": [
+        "state_dict不匹配",
+        "state_dict mismatch",
+        "keys 不匹配",
+        "Missing keys",
+        "Unexpected keys",
+        "model.load_state_dict",
+        "模型结构变更",
+        "设置strict=False加载部分权重",
+        "Error(s) in loading state_dict",
+        "state_dict",
+        "Saving and Loading Models Tutorial"
+      ]
+    },
+    {
+      "id": "kg_P009",
+      "title": "torch.load安全问题",
+      "category": "torch.load安全问题",
+      "source": "KnowledgeGraph",
+      "source_doc": "data/pytorch_kg.json",
+      "url": "https://pytorch.org/docs/stable/notes/serialization.html",
+      "text": "torch.load 使用 pickle 反序列化，加载不信任来源的模型文件存在安全风险。\nAPI: torch.load - 从文件加载序列化的对象，支持 map_location 和 weights_only 参数。\nParameter: weights_only - torch.load 参数，设置为 True 时只加载 tensor 数据，防止 pickle 安全攻击。\nCause: 加载不信任来源的模型文件 - torch.load 使用 pickle，恶意构造的 .pth 文件可能执行任意代码。\nSolution: 使用weights_only=True安全加载 - torch.load('model.pth', weights_only=True) 只加载张量数据，防止 pickle 反序列化攻击。\nSource: Serialization Semantics - PyTorch 序列化语义文档，详细说明 torch.load 的安全注意事项。",
+      "keywords": [
+        "torch.load安全问题",
+        "加载安全",
+        "weights_only",
+        "pickle 安全",
+        "torch.load",
+        "weights_only",
+        "加载不信任来源的模型文件",
+        "使用weights_only=True安全加载",
+        "Serialization Semantics"
+      ]
+    },
+    {
+      "id": "kg_P010",
+      "title": "CrossEntropyLoss输入问题",
+      "category": "CrossEntropyLoss输入问题",
+      "source": "KnowledgeGraph",
+      "source_doc": "data/pytorch_kg.json",
+      "url": "https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html",
+      "text": "CrossEntropyLoss 对输入 logits 和 target 的维度、类型有特定要求。\nAPI: torch.nn.CrossEntropyLoss - 交叉熵损失函数，结合 LogSoftmax 和 NLLLoss。\nCause: target类型错误 - CrossEntropyLoss 期望 target 为 LongTensor，但传入了 FloatTensor 或其他类型。\nSolution: 将target转为LongTensor - CrossEntropyLoss 要求 target 类型为 LongTensor。使用 target = target.long() 转换。\nError: expected scalar type Long but found Float - CrossEntropyLoss 的 target 需要 LongTensor，但传入了 FloatTensor。\nSource: CrossEntropyLoss Documentation - CrossEntropyLoss 的官方 API 文档。\nExample: 正确使用CrossEntropyLoss - CrossEntropyLoss 正确输入格式示例。",
+      "keywords": [
+        "CrossEntropyLoss输入问题",
+        "CrossEntropyLoss 维度",
+        "交叉熵输入",
+        "target size",
+        "torch.nn.CrossEntropyLoss",
+        "target类型错误",
+        "将target转为LongTensor",
+        "expected scalar type Long but found Float",
+        "CrossEntropyLoss Documentation",
+        "正确使用CrossEntropyLoss"
+      ]
+    },
+    {
+      "id": "faq_0",
+      "title": "torch.cuda.is_available() 返回 False 怎么办？",
+      "category": "CUDA问题",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: torch.cuda.is_available() 返回 False 怎么办？\nAnswerRef: CUDA不可用\nKeywords: cuda, is_available, False, GPU, 不可用",
+      "keywords": [
+        "cuda",
+        "is_available",
+        "False",
+        "GPU",
+        "不可用",
+        "CUDA不可用"
+      ]
+    },
+    {
+      "id": "faq_1",
+      "title": "CUDA out of memory 怎么解决？",
+      "category": "CUDA问题",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: CUDA out of memory 怎么解决？\nAnswerRef: CUDA显存不足\nKeywords: CUDA, out of memory, OOM, 显存, 内存不足",
+      "keywords": [
+        "CUDA",
+        "out of memory",
+        "OOM",
+        "显存",
+        "内存不足",
+        "CUDA显存不足"
+      ]
+    },
+    {
+      "id": "faq_2",
+      "title": "RuntimeError: CUDA out of memory 是什么原因？",
+      "category": "CUDA问题",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: RuntimeError: CUDA out of memory 是什么原因？\nAnswerRef: CUDA显存不足\nKeywords: RuntimeError, CUDA, out of memory, 显存",
+      "keywords": [
+        "RuntimeError",
+        "CUDA",
+        "out of memory",
+        "显存",
+        "CUDA显存不足"
+      ]
+    },
+    {
+      "id": "faq_3",
+      "title": "如何检查 PyTorch 是否正确安装了 CUDA 版本？",
+      "category": "CUDA问题",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: 如何检查 PyTorch 是否正确安装了 CUDA 版本？\nAnswerRef: CUDA不可用\nKeywords: 检查, PyTorch, CUDA, 版本, 安装",
+      "keywords": [
+        "检查",
+        "PyTorch",
+        "CUDA",
+        "版本",
+        "安装",
+        "CUDA不可用"
+      ]
+    },
+    {
+      "id": "faq_4",
+      "title": "DataLoader 的 num_workers 是什么意思？",
+      "category": "DataLoader问题",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: DataLoader 的 num_workers 是什么意思？\nAnswerRef: DataLoader参数问题\nKeywords: DataLoader, num_workers, 参数, 多进程",
+      "keywords": [
+        "DataLoader",
+        "num_workers",
+        "参数",
+        "多进程",
+        "DataLoader参数问题"
+      ]
+    },
+    {
+      "id": "faq_5",
+      "title": "DataLoader 设置 num_workers 大于 0 时报错怎么办？",
+      "category": "DataLoader问题",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: DataLoader 设置 num_workers 大于 0 时报错怎么办？\nAnswerRef: DataLoader多进程问题\nKeywords: DataLoader, num_workers, 报错, 多进程, 大于0",
+      "keywords": [
+        "DataLoader",
+        "num_workers",
+        "报错",
+        "多进程",
+        "大于0",
+        "DataLoader多进程问题"
+      ]
+    },
+    {
+      "id": "faq_6",
+      "title": "BrokenPipeError 在 DataLoader 中怎么解决？",
+      "category": "DataLoader问题",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: BrokenPipeError 在 DataLoader 中怎么解决？\nAnswerRef: DataLoader多进程问题\nKeywords: BrokenPipeError, DataLoader, 多进程, Windows",
+      "keywords": [
+        "BrokenPipeError",
+        "DataLoader",
+        "多进程",
+        "Windows",
+        "DataLoader多进程问题"
+      ]
+    },
+    {
+      "id": "faq_7",
+      "title": "PyTorch 怎么保存和加载模型？",
+      "category": "模型保存加载",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: PyTorch 怎么保存和加载模型？\nAnswerRef: 模型保存问题\nKeywords: 保存, 加载, 模型, save, load",
+      "keywords": [
+        "保存",
+        "加载",
+        "模型",
+        "save",
+        "load",
+        "模型保存问题"
+      ]
+    },
+    {
+      "id": "faq_8",
+      "title": "torch.save 和 torch.load 怎么用？",
+      "category": "模型保存加载",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: torch.save 和 torch.load 怎么用？\nAnswerRef: 模型保存问题\nKeywords: torch.save, torch.load, 保存, 加载",
+      "keywords": [
+        "torch.save",
+        "torch.load",
+        "保存",
+        "加载",
+        "模型保存问题"
+      ]
+    },
+    {
+      "id": "faq_9",
+      "title": "torch.load 的 weights_only=True 是什么意思？",
+      "category": "模型保存加载",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: torch.load 的 weights_only=True 是什么意思？\nAnswerRef: torch.load安全问题\nKeywords: torch.load, weights_only, 安全, 参数",
+      "keywords": [
+        "torch.load",
+        "weights_only",
+        "安全",
+        "参数",
+        "torch.load安全问题"
+      ]
+    },
+    {
+      "id": "faq_10",
+      "title": "模型保存后怎么加载？",
+      "category": "模型保存加载",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: 模型保存后怎么加载？\nAnswerRef: 模型加载问题\nKeywords: 模型, 保存, 加载, load",
+      "keywords": [
+        "模型",
+        "保存",
+        "加载",
+        "load",
+        "模型加载问题"
+      ]
+    },
+    {
+      "id": "faq_11",
+      "title": "state_dict 不匹配怎么办？",
+      "category": "模型保存加载",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: state_dict 不匹配怎么办？\nAnswerRef: state_dict不匹配\nKeywords: state_dict, 不匹配, mismatch, 加载, keys",
+      "keywords": [
+        "state_dict",
+        "不匹配",
+        "mismatch",
+        "加载",
+        "keys",
+        "state_dict不匹配"
+      ]
+    },
+    {
+      "id": "faq_12",
+      "title": "RuntimeError: Error(s) in loading state_dict 怎么解决？",
+      "category": "模型保存加载",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: RuntimeError: Error(s) in loading state_dict 怎么解决？\nAnswerRef: state_dict不匹配\nKeywords: RuntimeError, state_dict, loading, mismatch",
+      "keywords": [
+        "RuntimeError",
+        "state_dict",
+        "loading",
+        "mismatch",
+        "state_dict不匹配"
+      ]
+    },
+    {
+      "id": "faq_13",
+      "title": "CrossEntropyLoss 输入维度应该是什么？",
+      "category": "损失函数",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: CrossEntropyLoss 输入维度应该是什么？\nAnswerRef: CrossEntropyLoss输入问题\nKeywords: CrossEntropyLoss, 输入维度, target, logits, shape",
+      "keywords": [
+        "CrossEntropyLoss",
+        "输入维度",
+        "target",
+        "logits",
+        "shape",
+        "CrossEntropyLoss输入问题"
+      ]
+    },
+    {
+      "id": "faq_14",
+      "title": "CrossEntropyLoss 报错 target 维度不对怎么办？",
+      "category": "损失函数",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: CrossEntropyLoss 报错 target 维度不对怎么办？\nAnswerRef: CrossEntropyLoss输入问题\nKeywords: CrossEntropyLoss, target, 维度, 报错",
+      "keywords": [
+        "CrossEntropyLoss",
+        "target",
+        "维度",
+        "报错",
+        "CrossEntropyLoss输入问题"
+      ]
+    },
+    {
+      "id": "faq_15",
+      "title": "PyTorch 怎么查看 CUDA 版本？",
+      "category": "CUDA问题",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: PyTorch 怎么查看 CUDA 版本？\nAnswerRef: CUDA不可用\nKeywords: CUDA, 版本, 查看, torch.version.cuda",
+      "keywords": [
+        "CUDA",
+        "版本",
+        "查看",
+        "torch.version.cuda",
+        "CUDA不可用"
+      ]
+    },
+    {
+      "id": "faq_16",
+      "title": "PyTorch 安装的 CPU 版本如何切换到 GPU 版本？",
+      "category": "安装问题",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: PyTorch 安装的 CPU 版本如何切换到 GPU 版本？\nAnswerRef: PyTorch安装版本问题\nKeywords: 安装, CPU, GPU, 版本, 切换",
+      "keywords": [
+        "安装",
+        "CPU",
+        "GPU",
+        "版本",
+        "切换",
+        "PyTorch安装版本问题"
+      ]
+    },
+    {
+      "id": "faq_17",
+      "title": "pip install torch 安装的是 CPU 还是 GPU 版本？",
+      "category": "安装问题",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: pip install torch 安装的是 CPU 还是 GPU 版本？\nAnswerRef: PyTorch安装版本问题\nKeywords: pip, install, torch, CPU, GPU, 版本",
+      "keywords": [
+        "pip",
+        "install",
+        "torch",
+        "CPU",
+        "GPU",
+        "版本",
+        "PyTorch安装版本问题"
+      ]
+    },
+    {
+      "id": "faq_18",
+      "title": "如何清理 GPU 显存？",
+      "category": "CUDA问题",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: 如何清理 GPU 显存？\nAnswerRef: CUDA显存不足\nKeywords: 清理, GPU, 显存, cache, empty_cache",
+      "keywords": [
+        "清理",
+        "GPU",
+        "显存",
+        "cache",
+        "empty_cache",
+        "CUDA显存不足"
+      ]
+    },
+    {
+      "id": "faq_19",
+      "title": "torch.cuda.empty_cache() 有什么用？",
+      "category": "CUDA问题",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: torch.cuda.empty_cache() 有什么用？\nAnswerRef: CUDA显存不足\nKeywords: empty_cache, 清理, 显存, cache",
+      "keywords": [
+        "empty_cache",
+        "清理",
+        "显存",
+        "cache",
+        "CUDA显存不足"
+      ]
+    },
+    {
+      "id": "faq_20",
+      "title": "为什么 DataLoader 加载数据很慢？",
+      "category": "DataLoader问题",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: 为什么 DataLoader 加载数据很慢？\nAnswerRef: DataLoader参数问题\nKeywords: DataLoader, 加载, 慢, batch_size, pin_memory",
+      "keywords": [
+        "DataLoader",
+        "加载",
+        "慢",
+        "batch_size",
+        "pin_memory",
+        "DataLoader参数问题"
+      ]
+    },
+    {
+      "id": "faq_21",
+      "title": "pin_memory 是什么？应该设为 True 吗？",
+      "category": "DataLoader问题",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: pin_memory 是什么？应该设为 True 吗？\nAnswerRef: DataLoader参数问题\nKeywords: pin_memory, DataLoader, 参数, GPU",
+      "keywords": [
+        "pin_memory",
+        "DataLoader",
+        "参数",
+        "GPU",
+        "DataLoader参数问题"
+      ]
+    },
+    {
+      "id": "faq_22",
+      "title": "torch.save 保存整个模型和保存 state_dict 有什么区别？",
+      "category": "模型保存加载",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: torch.save 保存整个模型和保存 state_dict 有什么区别？\nAnswerRef: 模型保存问题\nKeywords: torch.save, state_dict, 整个模型, 区别",
+      "keywords": [
+        "torch.save",
+        "state_dict",
+        "整个模型",
+        "区别",
+        "模型保存问题"
+      ]
+    },
+    {
+      "id": "faq_23",
+      "title": "加载模型时 map_location 参数怎么用？",
+      "category": "模型保存加载",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: 加载模型时 map_location 参数怎么用？\nAnswerRef: 模型加载问题\nKeywords: map_location, 加载, CPU, GPU, device",
+      "keywords": [
+        "map_location",
+        "加载",
+        "CPU",
+        "GPU",
+        "device",
+        "模型加载问题"
+      ]
+    },
+    {
+      "id": "faq_24",
+      "title": "Missing key(s) in state_dict 怎么处理？",
+      "category": "模型保存加载",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: Missing key(s) in state_dict 怎么处理？\nAnswerRef: state_dict不匹配\nKeywords: Missing, keys, state_dict, strict",
+      "keywords": [
+        "Missing",
+        "keys",
+        "state_dict",
+        "strict",
+        "state_dict不匹配"
+      ]
+    },
+    {
+      "id": "faq_25",
+      "title": "Unexpected key(s) in state_dict 怎么处理？",
+      "category": "模型保存加载",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: Unexpected key(s) in state_dict 怎么处理？\nAnswerRef: state_dict不匹配\nKeywords: Unexpected, keys, state_dict, extra",
+      "keywords": [
+        "Unexpected",
+        "keys",
+        "state_dict",
+        "extra",
+        "state_dict不匹配"
+      ]
+    },
+    {
+      "id": "faq_26",
+      "title": "NLLLoss 和 CrossEntropyLoss 有什么区别？",
+      "category": "损失函数",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: NLLLoss 和 CrossEntropyLoss 有什么区别？\nAnswerRef: CrossEntropyLoss输入问题\nKeywords: NLLLoss, CrossEntropyLoss, 区别, LogSoftmax",
+      "keywords": [
+        "NLLLoss",
+        "CrossEntropyLoss",
+        "区别",
+        "LogSoftmax",
+        "CrossEntropyLoss输入问题"
+      ]
+    },
+    {
+      "id": "faq_27",
+      "title": "PyTorch 模型训练时显存一直增长怎么办？",
+      "category": "CUDA问题",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: PyTorch 模型训练时显存一直增长怎么办？\nAnswerRef: CUDA显存不足\nKeywords: 显存, 增长, 泄漏, detach, loss",
+      "keywords": [
+        "显存",
+        "增长",
+        "泄漏",
+        "detach",
+        "loss",
+        "CUDA显存不足"
+      ]
+    },
+    {
+      "id": "faq_28",
+      "title": "如何指定 PyTorch 使用哪块 GPU？",
+      "category": "CUDA问题",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: 如何指定 PyTorch 使用哪块 GPU？\nAnswerRef: CUDA不可用\nKeywords: 指定, GPU, CUDA_VISIBLE_DEVICES, device",
+      "keywords": [
+        "指定",
+        "GPU",
+        "CUDA_VISIBLE_DEVICES",
+        "device",
+        "CUDA不可用"
+      ]
+    },
+    {
+      "id": "faq_29",
+      "title": "PyTorch Lightning 中 DataLoader 的 num_workers 怎么设置？",
+      "category": "DataLoader问题",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: PyTorch Lightning 中 DataLoader 的 num_workers 怎么设置？\nAnswerRef: DataLoader参数问题\nKeywords: PyTorch Lightning, DataLoader, num_workers",
+      "keywords": [
+        "PyTorch Lightning",
+        "DataLoader",
+        "num_workers",
+        "DataLoader参数问题"
+      ]
+    },
+    {
+      "id": "faq_30",
+      "title": "torch.jit.script 和 torch.jit.trace 有什么区别？",
+      "category": "模型保存加载",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: torch.jit.script 和 torch.jit.trace 有什么区别？\nAnswerRef: 模型保存问题\nKeywords: jit, script, trace, TorchScript",
+      "keywords": [
+        "jit",
+        "script",
+        "trace",
+        "TorchScript",
+        "模型保存问题"
+      ]
+    },
+    {
+      "id": "faq_31",
+      "title": "保存的模型在另一台机器上加载报错怎么办？",
+      "category": "模型保存加载",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: 保存的模型在另一台机器上加载报错怎么办？\nAnswerRef: 模型加载问题\nKeywords: 模型, 另一台机器, 加载, 跨平台",
+      "keywords": [
+        "模型",
+        "另一台机器",
+        "加载",
+        "跨平台",
+        "模型加载问题"
+      ]
+    },
+    {
+      "id": "faq_32",
+      "title": "RuntimeError: expected scalar type Float but found Long",
+      "category": "损失函数",
+      "source": "FAQ",
+      "source_doc": "data/faq.json",
+      "url": "",
+      "text": "FAQ: RuntimeError: expected scalar type Float but found Long\nAnswerRef: CrossEntropyLoss输入问题\nKeywords: RuntimeError, scalar type, Float, Long, dtype",
+      "keywords": [
+        "RuntimeError",
+        "scalar type",
+        "Float",
+        "Long",
+        "dtype",
+        "CrossEntropyLoss输入问题"
+      ]
+    }
+  ]
+}

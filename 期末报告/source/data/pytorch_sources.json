@@ -1,0 +1,38 @@
+[
+  {
+    "id": "pytorch_get_started",
+    "title": "PyTorch Get Started Locally",
+    "url": "https://pytorch.org/get-started/locally/",
+    "topic": "安装与CUDA检查"
+  },
+  {
+    "id": "pytorch_data",
+    "title": "torch.utils.data",
+    "url": "https://pytorch.org/docs/stable/data.html",
+    "topic": "Dataset与DataLoader"
+  },
+  {
+    "id": "pytorch_save_load",
+    "title": "Saving and Loading Models",
+    "url": "https://pytorch.org/tutorials/beginner/saving_loading_models.html",
+    "topic": "模型保存与加载"
+  },
+  {
+    "id": "pytorch_serialization",
+    "title": "Serialization semantics",
+    "url": "https://pytorch.org/docs/stable/notes/serialization.html",
+    "topic": "序列化与torch.load安全"
+  },
+  {
+    "id": "pytorch_cross_entropy",
+    "title": "CrossEntropyLoss",
+    "url": "https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html",
+    "topic": "损失函数输入输出"
+  },
+  {
+    "id": "pytorch_cuda_memory",
+    "title": "Understanding CUDA Memory Usage",
+    "url": "https://pytorch.org/docs/stable/torch_cuda_memory.html",
+    "topic": "CUDA显存问题"
+  }
+]

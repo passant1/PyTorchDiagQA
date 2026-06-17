@@ -1,0 +1,104 @@
+id,name,label,description,aliases,url,command,code
+P001,CUDA不可用,Problem,torch.cuda.is_available() 返回 False，PyTorch 无法检测到 GPU。,CUDA 不可用|cuda 不可用|CUDA not available|GPU 不可用,,,
+P002,CUDA显存不足,Problem,训练或推理时出现 CUDA out of memory 错误，GPU 显存耗尽。,CUDA OOM|out of memory|显存不足|OOM,,,
+P003,PyTorch安装版本问题,Problem,安装的 PyTorch 是 CPU 版本而非 CUDA 版本，或版本与 CUDA 不兼容。,安装版本问题|CPU 版本|版本不兼容,,,
+P004,DataLoader参数问题,Problem,DataLoader 参数设置不当导致数据加载效率低或出错。,DataLoader 参数|batch_size 问题,,,
+P005,DataLoader多进程问题,Problem,DataLoader 使用多进程(num_workers>0)时的兼容性问题，尤其在 Windows 上。,多进程问题|BrokenPipeError|multiprocessing,,,
+P006,模型保存问题,Problem,如何正确保存 PyTorch 模型，包括整个模型和 state_dict 的区别。,保存模型|torch.save|模型保存,,,
+P007,模型加载问题,Problem,如何正确加载 PyTorch 模型，包括跨设备加载和 map_location 的使用。,加载模型|torch.load|模型加载,,,
+P008,state_dict不匹配,Problem,加载模型时 state_dict 的 keys 不匹配，包括 Missing keys 和 Unexpected keys。,state_dict mismatch|keys 不匹配|Missing keys|Unexpected keys,,,
+P009,torch.load安全问题,Problem,torch.load 使用 pickle 反序列化，加载不信任来源的模型文件存在安全风险。,加载安全|weights_only|pickle 安全,,,
+P010,CrossEntropyLoss输入问题,Problem,CrossEntropyLoss 对输入 logits 和 target 的维度、类型有特定要求。,CrossEntropyLoss 维度|交叉熵输入|target size,,,
+E001,CUDA out of memory,Error,RuntimeError: CUDA out of memory. Tried to allocate ... GPU 显存已耗尽。,OOM|显存溢出,,,
+E002,no CUDA-capable device is detected,Error,RuntimeError: No CUDA-capable device is detected. 系统未检测到支持 CUDA 的 GPU。,无 CUDA 设备,,,
+E003,BrokenPipeError in DataLoader,Error,Windows 上 DataLoader 多进程使用时可能触发 BrokenPipeError。,BrokenPipeError,,,
+E004,Error(s) in loading state_dict,Error,加载 state_dict 时出现 key 不匹配错误，Missing keys 或 Unexpected keys。,state_dict 加载错误,,,
+E005,expected scalar type Long but found Float,Error,CrossEntropyLoss 的 target 需要 LongTensor，但传入了 FloatTensor。,dtype mismatch|Long vs Float,,,
+A001,torch.cuda.is_available,API,检查 CUDA 是否可用，返回 bool 值。,is_available,,,
+A002,torch.version.cuda,API,返回 PyTorch 编译时使用的 CUDA 版本号。,version.cuda,,,
+A003,torch.cuda.empty_cache,API,释放 PyTorch 缓存的显存，不释放 tensor 占用。,empty_cache,,,
+A004,torch.cuda.memory_allocated,API,返回当前已分配的 GPU 显存字节数。,memory_allocated,,,
+A005,torch.cuda.memory_summary,API,打印详细的 CUDA 显存使用报告。,memory_summary,,,
+A006,torch.save,API,将对象序列化保存到文件，底层使用 pickle。,save,,,
+A007,torch.load,API,从文件加载序列化的对象，支持 map_location 和 weights_only 参数。,load,,,
+A008,torch.nn.CrossEntropyLoss,API,交叉熵损失函数，结合 LogSoftmax 和 NLLLoss。,CrossEntropyLoss,,,
+A009,torch.utils.data.DataLoader,API,PyTorch 数据加载器，支持批量加载、多进程、数据打乱。,DataLoader,,,
+A010,model.load_state_dict,API,将 state_dict 加载到模型中，支持 strict 参数控制是否严格匹配。,load_state_dict,,,
+C001,state_dict,Concept,PyTorch 模型的状态字典，存储模型各层的参数（权重和偏置）到 tensor 的映射。,状态字典,,,
+C002,DataLoader,Concept,PyTorch 数据加载器，封装 dataset 并提供批量、打乱、多进程加载功能。,数据加载器,,,
+C003,num_workers,Concept,DataLoader 参数，指定数据加载使用的子进程数量。0 表示主进程加载。,workers|工作进程,,,
+C004,batch_size,Concept,每次迭代加载的样本数量。过大会导致 OOM，过小会影响训练效率。,批次大小,,,
+C005,pin_memory,Concept,将数据锁定在 CPU 固定内存中，加速数据传输到 GPU。GPU 训练时建议 True。,固定内存,,,
+C006,map_location,Concept,torch.load 参数，指定将模型加载到哪个设备（CPU/GPU）。,设备映射,,,
+C007,weights_only,Concept,torch.load 参数，设置为 True 时只加载 tensor 数据，防止 pickle 安全攻击。,仅权重,,,
+C008,shuffle,Concept,DataLoader 参数，是否在每个 epoch 开始时打乱数据顺序。,数据打乱,,,
+C009,CUDA,Concept,NVIDIA 的并行计算平台和 API，PyTorch GPU 加速的基础。,Compute Unified Device Architecture,,,
+C010,AMP自动混合精度,Concept,自动混合精度训练，使用 float16 和 float32 混合计算，减少显存占用。,AMP|混合精度|autocast,,,
+S001,检查CUDA驱动和PyTorch版本,Solution,使用 nvidia-smi 检查驱动，使用 torch.version.cuda 检查 PyTorch CUDA 版本。确保两者兼容。,,,,
+S002,重新安装PyTorch CUDA版本,Solution,使用 pip install torch --index-url https://download.pytorch.org/whl/cu118 安装 CUDA 版本。,,,,
+S003,减小batch_size,Solution,将 batch_size 减小到 GPU 显存能容纳的大小。建议从 8 或 16 开始调优。,,,,
+S004,清理GPU显存,Solution,调用 torch.cuda.empty_cache() 清理 PyTorch 的显存缓存。在训练循环中及时 del 不再使用的 tensor。,,,,
+S005,使用AMP混合精度训练,Solution,使用 torch.cuda.amp.autocast() 和 GradScaler 实现混合精度训练，显著减少显存占用。,,,,
+S006,gradient_checkpointing,Solution,使用 torch.utils.checkpoint 进行梯度检查点，以计算换显存。,,,,
+S007,Windows下设置num_workers=0,Solution,在 Windows 系统上，将 DataLoader 的 num_workers 设置为 0，或使用 if __name__=='__main__' 保护。,,,,
+S008,使用state_dict保存模型,Solution,"推荐使用 torch.save(model.state_dict(), 'model.pth') 而非保存整个模型。",,,,
+S009,使用map_location跨设备加载,Solution,"torch.load('model.pth', map_location='cpu') 将 GPU 训练的模型加载到 CPU。",,,,
+S010,设置strict=False加载部分权重,Solution,"model.load_state_dict(state_dict, strict=False) 允许部分加载，忽略不匹配的 keys。",,,,
+S011,使用weights_only=True安全加载,Solution,"torch.load('model.pth', weights_only=True) 只加载张量数据，防止 pickle 反序列化攻击。",,,,
+S012,将target转为LongTensor,Solution,CrossEntropyLoss 要求 target 类型为 LongTensor。使用 target = target.long() 转换。,,,,
+U001,未安装NVIDIA显卡驱动,Cause,系统未安装 NVIDIA 显卡驱动，或驱动版本过旧不兼容当前 CUDA 版本。,,,,
+U002,PyTorch安装的是CPU版本,Cause,使用 pip install torch 默认安装的是 CPU 版本，不支持 CUDA。,,,,
+U003,batch_size过大,Cause,单次迭代加载的数据量超过 GPU 显存容量。,,,,
+U004,显存泄漏,Cause,训练循环中 tensor 未及时释放，loss 未 detach，或全局变量持有 tensor 引用。,,,,
+U005,Windows多进程限制,Cause,Windows 的 multiprocessing 机制与 Linux 不同，DataLoader 多进程需要特殊处理。,,,,
+U006,模型结构变更,Cause,保存 state_dict 后修改了模型定义（增删层），导致加载时 keys 不匹配。,,,,
+U007,加载不信任来源的模型文件,Cause,torch.load 使用 pickle，恶意构造的 .pth 文件可能执行任意代码。,,,,
+U008,target类型错误,Cause,CrossEntropyLoss 期望 target 为 LongTensor，但传入了 FloatTensor 或其他类型。,,,,
+M001,检查CUDA驱动,Command,查看 NVIDIA 驱动版本、CUDA 版本和 GPU 显存使用情况。,,,nvidia-smi,
+M002,检查PyTorch版本,Command,一键检查 PyTorch 版本、CUDA 版本和 GPU 可用性。,,,"python -c ""import torch; print(torch.__version__); print(torch.version.cuda); print(torch.cuda.is_available())""",
+M003,安装PyTorch CUDA版本,Command,安装 CUDA 11.8 版本的 PyTorch。请根据实际 CUDA 版本选择合适的 index-url。,,,pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118,
+M004,查看GPU显存使用,Command,查看 PyTorch 当前分配的 GPU 显存量。,,,"python -c ""import torch; print(f'Allocated: {torch.cuda.memory_allocated()/1e9:.2f} GB'); print(f'Reserved: {torch.cuda.memory_reserved()/1e9:.2f} GB')""",
+D001,PyTorch Get Started Locally,DocPage,PyTorch 官方安装指南，包含 pip/conda 安装命令和 CUDA 版本选择。,,https://pytorch.org/get-started/locally/,,
+D002,torch.utils.data Documentation,DocPage,DataLoader 和 Dataset 的官方 API 文档。,,https://pytorch.org/docs/stable/data.html,,
+D003,Saving and Loading Models Tutorial,DocPage,官方模型保存与加载教程。,,https://pytorch.org/tutorials/beginner/saving_loading_models.html,,
+D004,Serialization Semantics,DocPage,PyTorch 序列化语义文档，详细说明 torch.load 的安全注意事项。,,https://pytorch.org/docs/stable/notes/serialization.html,,
+D005,CrossEntropyLoss Documentation,DocPage,CrossEntropyLoss 的官方 API 文档。,,https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html,,
+D006,CUDA Memory Management,DocPage,PyTorch CUDA 显存管理官方文档。,,https://pytorch.org/docs/stable/torch_cuda_memory.html,,
+X001,检查CUDA可用性,CodeExample,检查 PyTorch 是否能检测到 GPU 及 CUDA 版本。,,,,"import torch
+print(torch.cuda.is_available())
+print(torch.version.cuda)
+print(torch.cuda.get_device_name(0))"
+X002,DataLoader基本用法,CodeExample,DataLoader 基本使用示例。,,,,"from torch.utils.data import DataLoader, TensorDataset
+import torch
+
+data = torch.randn(100, 3, 32, 32)
+labels = torch.randint(0, 10, (100,))
+dataset = TensorDataset(data, labels)
+loader = DataLoader(dataset, batch_size=16, shuffle=True, num_workers=2)"
+X003,保存和加载模型state_dict,CodeExample,使用 state_dict 保存和加载模型。,,,,"# 保存
+torch.save(model.state_dict(), 'model_weights.pth')
+# 加载
+model = MyModel()
+model.load_state_dict(torch.load('model_weights.pth'))
+model.eval()"
+X004,正确使用CrossEntropyLoss,CodeExample,CrossEntropyLoss 正确输入格式示例。,,,,"import torch
+import torch.nn as nn
+
+loss_fn = nn.CrossEntropyLoss()
+logits = torch.randn(32, 10)  # (batch_size, num_classes)
+target = torch.randint(0, 10, (32,)).long()  # (batch_size,) LongTensor
+loss = loss_fn(logits, target)
+print(loss)"
+X005,使用AMP混合精度训练,CodeExample,自动混合精度训练示例，减少显存占用。,,,,"from torch.cuda.amp import autocast, GradScaler
+
+scaler = GradScaler()
+for data, target in loader:
+    optimizer.zero_grad()
+    with autocast():
+        output = model(data)
+        loss = loss_fn(output, target)
+    scaler.scale(loss).backward()
+    scaler.step(optimizer)
+    scaler.update()"
+U009,DataLoader参数理解不足,Cause,不清楚 num_workers、batch_size、shuffle、pin_memory 等参数的作用，容易把性能问题误认为模型或 CUDA 错误。,,,,
+S013,按环境设置DataLoader参数,Solution,"先用 num_workers=0 验证数据集逻辑；Linux 可逐步增大到 2、4、8，Windows 或打包 exe 场景优先使用 0，并确认主入口有 if __name__ == ""__main__"" 保护。",,,,

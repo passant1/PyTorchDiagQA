@@ -1,0 +1,102 @@
+source,relation,target,evidence,source_doc
+P001,HAS_API,A001,torch.cuda.is_available() is the main API to check CUDA,PyTorch Get Started Locally
+P001,HAS_API,A002,torch.version.cuda returns CUDA version used to build PyTorch,PyTorch Get Started Locally
+P001,HAS_CAUSE,U001,"If NVIDIA driver is not installed, CUDA cannot work",PyTorch Get Started Locally
+P001,HAS_CAUSE,U002,pip install torch may install CPU-only version,PyTorch Get Started Locally
+P001,HAS_SOLUTION,S001,Check driver with nvidia-smi and PyTorch CUDA version,PyTorch Get Started Locally
+P001,HAS_SOLUTION,S002,Reinstall PyTorch with --index-url for CUDA version,PyTorch Get Started Locally
+P001,CHECK_BY,M001,nvidia-smi checks driver and CUDA version,PyTorch Get Started Locally
+P001,CHECK_BY,M002,python command to check PyTorch CUDA status,PyTorch Get Started Locally
+P001,HAS_EXAMPLE,X001,Code example to check CUDA availability,PyTorch Get Started Locally
+P001,MENTIONED_IN,D001,Official PyTorch installation guide,PyTorch Get Started Locally
+P001,SIMILAR_TO,P003,Both related to CUDA availability issues,PyTorch Get Started Locally
+P001,RELATED_TO,C009,CUDA is the underlying technology,PyTorch Get Started Locally
+P002,HAS_API,A003,torch.cuda.empty_cache() frees cached memory,CUDA Memory Management
+P002,HAS_API,A004,torch.cuda.memory_allocated() checks allocated memory,CUDA Memory Management
+P002,HAS_API,A005,torch.cuda.memory_summary() prints detailed memory report,CUDA Memory Management
+P002,HAS_CAUSE,U003,batch_size too large causes OOM,CUDA Memory Management
+P002,HAS_CAUSE,U004,Memory leak from undetached tensors,CUDA Memory Management
+P002,HAS_SOLUTION,S003,Reduce batch_size to fit GPU memory,CUDA Memory Management
+P002,HAS_SOLUTION,S004,Use torch.cuda.empty_cache() to clean cache,CUDA Memory Management
+P002,HAS_SOLUTION,S005,Use AMP to reduce memory usage,CUDA Memory Management
+P002,HAS_SOLUTION,S006,Gradient checkpointing trades compute for memory,CUDA Memory Management
+P002,HAS_ERROR,E001,CUDA out of memory is the primary error,CUDA Memory Management
+P002,MENTIONED_IN,D006,Official CUDA memory management docs,CUDA Memory Management
+P002,RELATED_TO,C005,pin_memory affects GPU memory transfer,torch.utils.data
+P002,RELATED_TO,C010,AMP reduces memory usage significantly,CUDA Memory Management
+P002,HAS_EXAMPLE,X005,AMP training example,CUDA Memory Management
+P003,HAS_CAUSE,U002,Default pip install may be CPU-only,PyTorch Get Started Locally
+P003,HAS_SOLUTION,S002,Use --index-url to specify CUDA version,PyTorch Get Started Locally
+P003,CHECK_BY,M003,Install command with correct index-url,PyTorch Get Started Locally
+P003,MENTIONED_IN,D001,Official installation guide,PyTorch Get Started Locally
+P003,SIMILAR_TO,P001,Both involve CUDA/non-CUDA issues,PyTorch Get Started Locally
+P003,RELATED_TO,C009,CUDA is the core dependency,PyTorch Get Started Locally
+P004,HAS_API,A009,DataLoader is the core data loading API,torch.utils.data
+P004,HAS_PARAMETER,C003,num_workers controls multiprocessing,torch.utils.data
+P004,HAS_PARAMETER,C004,batch_size controls batch size,torch.utils.data
+P004,HAS_PARAMETER,C005,pin_memory speeds up GPU transfer,torch.utils.data
+P004,HAS_PARAMETER,C008,shuffle randomizes data order,torch.utils.data
+P004,MENTIONED_IN,D002,Official DataLoader docs,torch.utils.data
+P004,HAS_EXAMPLE,X002,DataLoader usage example,torch.utils.data
+P004,SIMILAR_TO,P005,Both are DataLoader issues,torch.utils.data
+P005,HAS_API,A009,DataLoader multiprocessing,torch.utils.data
+P005,HAS_PARAMETER,C003,num_workers triggers multiprocessing,torch.utils.data
+P005,HAS_CAUSE,U005,Windows multiprocessing differs from Linux,torch.utils.data
+P005,HAS_SOLUTION,S007,Set num_workers=0 or use if __name__=='__main__',torch.utils.data
+P005,HAS_ERROR,E003,BrokenPipeError on Windows,torch.utils.data
+P005,MENTIONED_IN,D002,Official DataLoader documentation,torch.utils.data
+P005,SIMILAR_TO,P004,Both are DataLoader issues,torch.utils.data
+P006,HAS_API,A006,torch.save serializes objects,Saving and Loading Models
+P006,HAS_SOLUTION,S008,Use state_dict instead of saving entire model,Saving and Loading Models
+P006,RELATED_TO,C001,state_dict is the recommended save format,Saving and Loading Models
+P006,MENTIONED_IN,D003,Official save/load tutorial,Saving and Loading Models
+P006,HAS_EXAMPLE,X003,Save and load state_dict example,Saving and Loading Models
+P006,SIMILAR_TO,P007,Save and load are complementary,Saving and Loading Models
+P007,HAS_API,A007,torch.load deserializes objects,Saving and Loading Models
+P007,HAS_API,A010,load_state_dict loads weights into model,Saving and Loading Models
+P007,HAS_PARAMETER,C006,map_location controls device placement,Saving and Loading Models
+P007,HAS_SOLUTION,S009,Use map_location for cross-device loading,Saving and Loading Models
+P007,MENTIONED_IN,D003,Official save/load tutorial,Saving and Loading Models
+P007,SIMILAR_TO,P006,Save and load are complementary,Saving and Loading Models
+P007,SIMILAR_TO,P008,state_dict mismatch is a common loading issue,Saving and Loading Models
+P008,HAS_API,A010,load_state_dict triggers the mismatch error,Saving and Loading Models
+P008,HAS_CAUSE,U006,Model structure changed after saving,Saving and Loading Models
+P008,HAS_SOLUTION,S010,Use strict=False to ignore mismatched keys,Saving and Loading Models
+P008,HAS_ERROR,E004,Error(s) in loading state_dict,Saving and Loading Models
+P008,RELATED_TO,C001,state_dict is the core concept,Saving and Loading Models
+P008,MENTIONED_IN,D003,Official save/load tutorial,Saving and Loading Models
+P009,HAS_API,A007,torch.load uses pickle under the hood,Serialization Semantics
+P009,HAS_PARAMETER,C007,weights_only parameter controls security,Serialization Semantics
+P009,HAS_CAUSE,U007,Pickle deserialization can execute arbitrary code,Serialization Semantics
+P009,HAS_SOLUTION,S011,Use weights_only=True for safe loading,Serialization Semantics
+P009,MENTIONED_IN,D004,Official serialization semantics doc,Serialization Semantics
+P010,HAS_API,A008,CrossEntropyLoss is the main classification loss,CrossEntropyLoss Documentation
+P010,HAS_CAUSE,U008,"target must be LongTensor, not FloatTensor",CrossEntropyLoss Documentation
+P010,HAS_SOLUTION,S012,Convert target to LongTensor with .long(),CrossEntropyLoss Documentation
+P010,HAS_ERROR,E005,expected scalar type Long but found Float,CrossEntropyLoss Documentation
+P010,MENTIONED_IN,D005,Official CrossEntropyLoss API docs,CrossEntropyLoss Documentation
+P010,HAS_EXAMPLE,X004,Correct CrossEntropyLoss usage example,CrossEntropyLoss Documentation
+A001,RELATED_TO,A002,Both are CUDA-related checks,PyTorch Get Started Locally
+A003,RELATED_TO,A004,Both are memory management APIs,CUDA Memory Management
+A006,RELATED_TO,A007,save and load are paired operations,Saving and Loading Models
+C001,RELATED_TO,A006,model.state_dict() is used with torch.save,Saving and Loading Models
+C001,RELATED_TO,A010,state_dict is loaded via load_state_dict,Saving and Loading Models
+C002,RELATED_TO,A009,DataLoader is the implementation,torch.utils.data
+C003,RELATED_TO,U005,num_workers triggers Windows limitation,torch.utils.data
+C007,RELATED_TO,U007,weights_only mitigates pickle attack,Serialization Semantics
+C010,RELATED_TO,S005,AMP is the solution for memory reduction,CUDA Memory Management
+C009,RELATED_TO,E002,No CUDA device causes this error,PyTorch Get Started Locally
+S008,RELATED_TO,C001,state_dict is the recommended approach,Saving and Loading Models
+E001,RELATED_TO,S003,OOM often requires batch_size reduction,CUDA Memory Management
+E005,RELATED_TO,S012,Fix dtype by converting to LongTensor,CrossEntropyLoss Documentation
+U001,RELATED_TO,M001,nvidia-smi checks driver status,PyTorch Get Started Locally
+U002,RELATED_TO,M003,Reinstall with correct CUDA version,PyTorch Get Started Locally
+S005,RELATED_TO,C010,AMP enables mixed precision,CUDA Memory Management
+X005,RELATED_TO,S005,Example of AMP solution,CUDA Memory Management
+E001,RELATED_TO,P002,OOM is the main error for memory issues,CUDA Memory Management
+E002,RELATED_TO,P001,No CUDA device is a CUDA problem,PyTorch Get Started Locally
+E003,RELATED_TO,P005,BrokenPipeError relates to DataLoader multiprocessing,torch.utils.data
+E004,RELATED_TO,P008,Loading error relates to state_dict mismatch,Saving and Loading Models
+E005,RELATED_TO,P010,dtype mismatch relates to CrossEntropyLoss,CrossEntropyLoss Documentation
+P004,HAS_CAUSE,U009,"DataLoader parameters change loading behavior and multiprocessing, not model computation itself.",torch.utils.data
+P004,HAS_SOLUTION,S013,"Start with num_workers=0 for correctness, then tune worker count according to OS and workload.",torch.utils.data

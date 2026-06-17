@@ -1,0 +1,200 @@
+[
+  {
+    "question": "torch.cuda.is_available() 返回 False 怎么办？",
+    "answer_ref": "CUDA不可用",
+    "category": "CUDA问题",
+    "keywords": ["cuda", "is_available", "False", "GPU", "不可用"]
+  },
+  {
+    "question": "CUDA out of memory 怎么解决？",
+    "answer_ref": "CUDA显存不足",
+    "category": "CUDA问题",
+    "keywords": ["CUDA", "out of memory", "OOM", "显存", "内存不足"]
+  },
+  {
+    "question": "RuntimeError: CUDA out of memory 是什么原因？",
+    "answer_ref": "CUDA显存不足",
+    "category": "CUDA问题",
+    "keywords": ["RuntimeError", "CUDA", "out of memory", "显存"]
+  },
+  {
+    "question": "如何检查 PyTorch 是否正确安装了 CUDA 版本？",
+    "answer_ref": "CUDA不可用",
+    "category": "CUDA问题",
+    "keywords": ["检查", "PyTorch", "CUDA", "版本", "安装"]
+  },
+  {
+    "question": "DataLoader 的 num_workers 是什么意思？",
+    "answer_ref": "DataLoader参数问题",
+    "category": "DataLoader问题",
+    "keywords": ["DataLoader", "num_workers", "参数", "多进程"]
+  },
+  {
+    "question": "DataLoader 设置 num_workers 大于 0 时报错怎么办？",
+    "answer_ref": "DataLoader多进程问题",
+    "category": "DataLoader问题",
+    "keywords": ["DataLoader", "num_workers", "报错", "多进程", "大于0"]
+  },
+  {
+    "question": "BrokenPipeError 在 DataLoader 中怎么解决？",
+    "answer_ref": "DataLoader多进程问题",
+    "category": "DataLoader问题",
+    "keywords": ["BrokenPipeError", "DataLoader", "多进程", "Windows"]
+  },
+  {
+    "question": "PyTorch 怎么保存和加载模型？",
+    "answer_ref": "模型保存问题",
+    "category": "模型保存加载",
+    "keywords": ["保存", "加载", "模型", "save", "load"]
+  },
+  {
+    "question": "torch.save 和 torch.load 怎么用？",
+    "answer_ref": "模型保存问题",
+    "category": "模型保存加载",
+    "keywords": ["torch.save", "torch.load", "保存", "加载"]
+  },
+  {
+    "question": "torch.load 的 weights_only=True 是什么意思？",
+    "answer_ref": "torch.load安全问题",
+    "category": "模型保存加载",
+    "keywords": ["torch.load", "weights_only", "安全", "参数"]
+  },
+  {
+    "question": "模型保存后怎么加载？",
+    "answer_ref": "模型加载问题",
+    "category": "模型保存加载",
+    "keywords": ["模型", "保存", "加载", "load"]
+  },
+  {
+    "question": "state_dict 不匹配怎么办？",
+    "answer_ref": "state_dict不匹配",
+    "category": "模型保存加载",
+    "keywords": ["state_dict", "不匹配", "mismatch", "加载", "keys"]
+  },
+  {
+    "question": "RuntimeError: Error(s) in loading state_dict 怎么解决？",
+    "answer_ref": "state_dict不匹配",
+    "category": "模型保存加载",
+    "keywords": ["RuntimeError", "state_dict", "loading", "mismatch"]
+  },
+  {
+    "question": "CrossEntropyLoss 输入维度应该是什么？",
+    "answer_ref": "CrossEntropyLoss输入问题",
+    "category": "损失函数",
+    "keywords": ["CrossEntropyLoss", "输入维度", "target", "logits", "shape"]
+  },
+  {
+    "question": "CrossEntropyLoss 报错 target 维度不对怎么办？",
+    "answer_ref": "CrossEntropyLoss输入问题",
+    "category": "损失函数",
+    "keywords": ["CrossEntropyLoss", "target", "维度", "报错"]
+  },
+  {
+    "question": "PyTorch 怎么查看 CUDA 版本？",
+    "answer_ref": "CUDA不可用",
+    "category": "CUDA问题",
+    "keywords": ["CUDA", "版本", "查看", "torch.version.cuda"]
+  },
+  {
+    "question": "PyTorch 安装的 CPU 版本如何切换到 GPU 版本？",
+    "answer_ref": "PyTorch安装版本问题",
+    "category": "安装问题",
+    "keywords": ["安装", "CPU", "GPU", "版本", "切换"]
+  },
+  {
+    "question": "pip install torch 安装的是 CPU 还是 GPU 版本？",
+    "answer_ref": "PyTorch安装版本问题",
+    "category": "安装问题",
+    "keywords": ["pip", "install", "torch", "CPU", "GPU", "版本"]
+  },
+  {
+    "question": "如何清理 GPU 显存？",
+    "answer_ref": "CUDA显存不足",
+    "category": "CUDA问题",
+    "keywords": ["清理", "GPU", "显存", "cache", "empty_cache"]
+  },
+  {
+    "question": "torch.cuda.empty_cache() 有什么用？",
+    "answer_ref": "CUDA显存不足",
+    "category": "CUDA问题",
+    "keywords": ["empty_cache", "清理", "显存", "cache"]
+  },
+  {
+    "question": "为什么 DataLoader 加载数据很慢？",
+    "answer_ref": "DataLoader参数问题",
+    "category": "DataLoader问题",
+    "keywords": ["DataLoader", "加载", "慢", "batch_size", "pin_memory"]
+  },
+  {
+    "question": "pin_memory 是什么？应该设为 True 吗？",
+    "answer_ref": "DataLoader参数问题",
+    "category": "DataLoader问题",
+    "keywords": ["pin_memory", "DataLoader", "参数", "GPU"]
+  },
+  {
+    "question": "torch.save 保存整个模型和保存 state_dict 有什么区别？",
+    "answer_ref": "模型保存问题",
+    "category": "模型保存加载",
+    "keywords": ["torch.save", "state_dict", "整个模型", "区别"]
+  },
+  {
+    "question": "加载模型时 map_location 参数怎么用？",
+    "answer_ref": "模型加载问题",
+    "category": "模型保存加载",
+    "keywords": ["map_location", "加载", "CPU", "GPU", "device"]
+  },
+  {
+    "question": "Missing key(s) in state_dict 怎么处理？",
+    "answer_ref": "state_dict不匹配",
+    "category": "模型保存加载",
+    "keywords": ["Missing", "keys", "state_dict", "strict"]
+  },
+  {
+    "question": "Unexpected key(s) in state_dict 怎么处理？",
+    "answer_ref": "state_dict不匹配",
+    "category": "模型保存加载",
+    "keywords": ["Unexpected", "keys", "state_dict", "extra"]
+  },
+  {
+    "question": "NLLLoss 和 CrossEntropyLoss 有什么区别？",
+    "answer_ref": "CrossEntropyLoss输入问题",
+    "category": "损失函数",
+    "keywords": ["NLLLoss", "CrossEntropyLoss", "区别", "LogSoftmax"]
+  },
+  {
+    "question": "PyTorch 模型训练时显存一直增长怎么办？",
+    "answer_ref": "CUDA显存不足",
+    "category": "CUDA问题",
+    "keywords": ["显存", "增长", "泄漏", "detach", "loss"]
+  },
+  {
+    "question": "如何指定 PyTorch 使用哪块 GPU？",
+    "answer_ref": "CUDA不可用",
+    "category": "CUDA问题",
+    "keywords": ["指定", "GPU", "CUDA_VISIBLE_DEVICES", "device"]
+  },
+  {
+    "question": "PyTorch Lightning 中 DataLoader 的 num_workers 怎么设置？",
+    "answer_ref": "DataLoader参数问题",
+    "category": "DataLoader问题",
+    "keywords": ["PyTorch Lightning", "DataLoader", "num_workers"]
+  },
+  {
+    "question": "torch.jit.script 和 torch.jit.trace 有什么区别？",
+    "answer_ref": "模型保存问题",
+    "category": "模型保存加载",
+    "keywords": ["jit", "script", "trace", "TorchScript"]
+  },
+  {
+    "question": "保存的模型在另一台机器上加载报错怎么办？",
+    "answer_ref": "模型加载问题",
+    "category": "模型保存加载",
+    "keywords": ["模型", "另一台机器", "加载", "跨平台"]
+  },
+  {
+    "question": "RuntimeError: expected scalar type Float but found Long",
+    "answer_ref": "CrossEntropyLoss输入问题",
+    "category": "损失函数",
+    "keywords": ["RuntimeError", "scalar type", "Float", "Long", "dtype"]
+  }
+]

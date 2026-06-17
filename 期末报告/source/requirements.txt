@@ -1,0 +1,30 @@
+# PyTorch 智能报错诊断问答系统 - 依赖列表
+# ==========================================
+
+# 核心依赖
+numpy>=1.21.0
+scikit-learn>=1.0.0
+jieba>=0.42.1
+pyyaml>=5.4
+
+# 大模型 API (OpenAI 兼容接口)
+openai>=1.0.0
+
+# 后端服务 (可选)
+fastapi>=0.100.0
+uvicorn>=0.22.0
+pydantic>=2.0.0
+
+# 网页抓取 (可选，用于自动构建知识图谱)
+requests>=2.28.0
+beautifulsoup4>=4.11.0
+
+# 语音合成 (可选)
+pyttsx3>=2.90
+
+# 语音识别 (可选)
+SpeechRecognition>=3.10.0
+# PyAudio 需要单独安装: pip install pipwin && pipwin install pyaudio
+
+# 打包 (开发环境)
+pyinstaller>=5.13.0

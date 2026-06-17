@@ -1,0 +1,402 @@
+"""
+知识图谱构建器
+合并种子图谱、规则抽取结果、大模型抽取结果，生成最终图谱
+"""
+import json
+import os
+
+from utils.path_utils import get_data_path
+
+
+# ==========================================
+# 人工种子图谱
+# ==========================================
+SEED_NODES = [
+    # ---- Problem 节点 ----
+    {"id": "P001", "name": "CUDA不可用", "label": "Problem",
+     "description": "torch.cuda.is_available() 返回 False，PyTorch 无法检测到 GPU。",
+     "aliases": ["CUDA 不可用", "cuda 不可用", "CUDA not available", "GPU 不可用"]},
+    {"id": "P002", "name": "CUDA显存不足", "label": "Problem",
+     "description": "训练或推理时出现 CUDA out of memory 错误，GPU 显存耗尽。",
+     "aliases": ["CUDA OOM", "out of memory", "显存不足", "OOM"]},
+    {"id": "P003", "name": "PyTorch安装版本问题", "label": "Problem",
+     "description": "安装的 PyTorch 是 CPU 版本而非 CUDA 版本，或版本与 CUDA 不兼容。",
+     "aliases": ["安装版本问题", "CPU 版本", "版本不兼容"]},
+    {"id": "P004", "name": "DataLoader参数问题", "label": "Problem",
+     "description": "DataLoader 参数设置不当导致数据加载效率低或出错。",
+     "aliases": ["DataLoader 参数", "batch_size 问题"]},
+    {"id": "P005", "name": "DataLoader多进程问题", "label": "Problem",
+     "description": "DataLoader 使用多进程(num_workers>0)时的兼容性问题，尤其在 Windows 上。",
+     "aliases": ["多进程问题", "BrokenPipeError", "multiprocessing"]},
+    {"id": "P006", "name": "模型保存问题", "label": "Problem",
+     "description": "如何正确保存 PyTorch 模型，包括整个模型和 state_dict 的区别。",
+     "aliases": ["保存模型", "torch.save", "模型保存"]},
+    {"id": "P007", "name": "模型加载问题", "label": "Problem",
+     "description": "如何正确加载 PyTorch 模型，包括跨设备加载和 map_location 的使用。",
+     "aliases": ["加载模型", "torch.load", "模型加载"]},
+    {"id": "P008", "name": "state_dict不匹配", "label": "Problem",
+     "description": "加载模型时 state_dict 的 keys 不匹配，包括 Missing keys 和 Unexpected keys。",
+     "aliases": ["state_dict mismatch", "keys 不匹配", "Missing keys", "Unexpected keys"]},
+    {"id": "P009", "name": "torch.load安全问题", "label": "Problem",
+     "description": "torch.load 使用 pickle 反序列化，加载不信任来源的模型文件存在安全风险。",
+     "aliases": ["加载安全", "weights_only", "pickle 安全"]},
+    {"id": "P010", "name": "CrossEntropyLoss输入问题", "label": "Problem",
+     "description": "CrossEntropyLoss 对输入 logits 和 target 的维度、类型有特定要求。",
+     "aliases": ["CrossEntropyLoss 维度", "交叉熵输入", "target size"]},
+
+    # ---- Error 节点 ----
+    {"id": "E001", "name": "CUDA out of memory", "label": "Error",
+     "description": "RuntimeError: CUDA out of memory. Tried to allocate ... GPU 显存已耗尽。",
+     "aliases": ["OOM", "显存溢出"]},
+    {"id": "E002", "name": "no CUDA-capable device is detected", "label": "Error",
+     "description": "RuntimeError: No CUDA-capable device is detected. 系统未检测到支持 CUDA 的 GPU。",
+     "aliases": ["无 CUDA 设备"]},
+    {"id": "E003", "name": "BrokenPipeError in DataLoader", "label": "Error",
+     "description": "Windows 上 DataLoader 多进程使用时可能触发 BrokenPipeError。",
+     "aliases": ["BrokenPipeError"]},
+    {"id": "E004", "name": "Error(s) in loading state_dict", "label": "Error",
+     "description": "加载 state_dict 时出现 key 不匹配错误，Missing keys 或 Unexpected keys。",
+     "aliases": ["state_dict 加载错误"]},
+    {"id": "E005", "name": "expected scalar type Long but found Float", "label": "Error",
+     "description": "CrossEntropyLoss 的 target 需要 LongTensor，但传入了 FloatTensor。",
+     "aliases": ["dtype mismatch", "Long vs Float"]},
+
+    # ---- API 节点 ----
+    {"id": "A001", "name": "torch.cuda.is_available", "label": "API",
+     "description": "检查 CUDA 是否可用，返回 bool 值。",
+     "aliases": ["is_available"]},
+    {"id": "A002", "name": "torch.version.cuda", "label": "API",
+     "description": "返回 PyTorch 编译时使用的 CUDA 版本号。",
+     "aliases": ["version.cuda"]},
+    {"id": "A003", "name": "torch.cuda.empty_cache", "label": "API",
+     "description": "释放 PyTorch 缓存的显存，不释放 tensor 占用。",
+     "aliases": ["empty_cache"]},
+    {"id": "A004", "name": "torch.cuda.memory_allocated", "label": "API",
+     "description": "返回当前已分配的 GPU 显存字节数。",
+     "aliases": ["memory_allocated"]},
+    {"id": "A005", "name": "torch.cuda.memory_summary", "label": "API",
+     "description": "打印详细的 CUDA 显存使用报告。",
+     "aliases": ["memory_summary"]},
+    {"id": "A006", "name": "torch.save", "label": "API",
+     "description": "将对象序列化保存到文件，底层使用 pickle。",
+     "aliases": ["save"]},
+    {"id": "A007", "name": "torch.load", "label": "API",
+     "description": "从文件加载序列化的对象，支持 map_location 和 weights_only 参数。",
+     "aliases": ["load"]},
+    {"id": "A008", "name": "torch.nn.CrossEntropyLoss", "label": "API",
+     "description": "交叉熵损失函数，结合 LogSoftmax 和 NLLLoss。",
+     "aliases": ["CrossEntropyLoss"]},
+    {"id": "A009", "name": "torch.utils.data.DataLoader", "label": "API",
+     "description": "PyTorch 数据加载器，支持批量加载、多进程、数据打乱。",
+     "aliases": ["DataLoader"]},
+    {"id": "A010", "name": "model.load_state_dict", "label": "API",
+     "description": "将 state_dict 加载到模型中，支持 strict 参数控制是否严格匹配。",
+     "aliases": ["load_state_dict"]},
+
+    # ---- Concept 节点 ----
+    {"id": "C001", "name": "state_dict", "label": "Concept",
+     "description": "PyTorch 模型的状态字典，存储模型各层的参数（权重和偏置）到 tensor 的映射。",
+     "aliases": ["状态字典"]},
+    {"id": "C002", "name": "DataLoader", "label": "Concept",
+     "description": "PyTorch 数据加载器，封装 dataset 并提供批量、打乱、多进程加载功能。",
+     "aliases": ["数据加载器"]},
+    {"id": "C003", "name": "num_workers", "label": "Concept",
+     "description": "DataLoader 参数，指定数据加载使用的子进程数量。0 表示主进程加载。",
+     "aliases": ["workers", "工作进程"]},
+    {"id": "C004", "name": "batch_size", "label": "Concept",
+     "description": "每次迭代加载的样本数量。过大会导致 OOM，过小会影响训练效率。",
+     "aliases": ["批次大小"]},
+    {"id": "C005", "name": "pin_memory", "label": "Concept",
+     "description": "将数据锁定在 CPU 固定内存中，加速数据传输到 GPU。GPU 训练时建议 True。",
+     "aliases": ["固定内存"]},
+    {"id": "C006", "name": "map_location", "label": "Concept",
+     "description": "torch.load 参数，指定将模型加载到哪个设备（CPU/GPU）。",
+     "aliases": ["设备映射"]},
+    {"id": "C007", "name": "weights_only", "label": "Concept",
+     "description": "torch.load 参数，设置为 True 时只加载 tensor 数据，防止 pickle 安全攻击。",
+     "aliases": ["仅权重"]},
+    {"id": "C008", "name": "shuffle", "label": "Concept",
+     "description": "DataLoader 参数，是否在每个 epoch 开始时打乱数据顺序。",
+     "aliases": ["数据打乱"]},
+    {"id": "C009", "name": "CUDA", "label": "Concept",
+     "description": "NVIDIA 的并行计算平台和 API，PyTorch GPU 加速的基础。",
+     "aliases": ["Compute Unified Device Architecture"]},
+    {"id": "C010", "name": "AMP自动混合精度", "label": "Concept",
+     "description": "自动混合精度训练，使用 float16 和 float32 混合计算，减少显存占用。",
+     "aliases": ["AMP", "混合精度", "autocast"]},
+
+    # ---- Solution 节点 ----
+    {"id": "S001", "name": "检查CUDA驱动和PyTorch版本", "label": "Solution",
+     "description": "使用 nvidia-smi 检查驱动，使用 torch.version.cuda 检查 PyTorch CUDA 版本。确保两者兼容。"},
+    {"id": "S002", "name": "重新安装PyTorch CUDA版本", "label": "Solution",
+     "description": "使用 pip install torch --index-url https://download.pytorch.org/whl/cu118 安装 CUDA 版本。"},
+    {"id": "S003", "name": "减小batch_size", "label": "Solution",
+     "description": "将 batch_size 减小到 GPU 显存能容纳的大小。建议从 8 或 16 开始调优。"},
+    {"id": "S004", "name": "清理GPU显存", "label": "Solution",
+     "description": "调用 torch.cuda.empty_cache() 清理 PyTorch 的显存缓存。在训练循环中及时 del 不再使用的 tensor。"},
+    {"id": "S005", "name": "使用AMP混合精度训练", "label": "Solution",
+     "description": "使用 torch.cuda.amp.autocast() 和 GradScaler 实现混合精度训练，显著减少显存占用。"},
+    {"id": "S006", "name": "gradient_checkpointing", "label": "Solution",
+     "description": "使用 torch.utils.checkpoint 进行梯度检查点，以计算换显存。"},
+    {"id": "S007", "name": "Windows下设置num_workers=0", "label": "Solution",
+     "description": "在 Windows 系统上，将 DataLoader 的 num_workers 设置为 0，或使用 if __name__=='__main__' 保护。"},
+    {"id": "S008", "name": "使用state_dict保存模型", "label": "Solution",
+     "description": "推荐使用 torch.save(model.state_dict(), 'model.pth') 而非保存整个模型。"},
+    {"id": "S009", "name": "使用map_location跨设备加载", "label": "Solution",
+     "description": "torch.load('model.pth', map_location='cpu') 将 GPU 训练的模型加载到 CPU。"},
+    {"id": "S010", "name": "设置strict=False加载部分权重", "label": "Solution",
+     "description": "model.load_state_dict(state_dict, strict=False) 允许部分加载，忽略不匹配的 keys。"},
+    {"id": "S011", "name": "使用weights_only=True安全加载", "label": "Solution",
+     "description": "torch.load('model.pth', weights_only=True) 只加载张量数据，防止 pickle 反序列化攻击。"},
+    {"id": "S012", "name": "将target转为LongTensor", "label": "Solution",
+     "description": "CrossEntropyLoss 要求 target 类型为 LongTensor。使用 target = target.long() 转换。"},
+
+    # ---- Cause 节点 ----
+    {"id": "U001", "name": "未安装NVIDIA显卡驱动", "label": "Cause",
+     "description": "系统未安装 NVIDIA 显卡驱动，或驱动版本过旧不兼容当前 CUDA 版本。"},
+    {"id": "U002", "name": "PyTorch安装的是CPU版本", "label": "Cause",
+     "description": "使用 pip install torch 默认安装的是 CPU 版本，不支持 CUDA。"},
+    {"id": "U003", "name": "batch_size过大", "label": "Cause",
+     "description": "单次迭代加载的数据量超过 GPU 显存容量。"},
+    {"id": "U004", "name": "显存泄漏", "label": "Cause",
+     "description": "训练循环中 tensor 未及时释放，loss 未 detach，或全局变量持有 tensor 引用。"},
+    {"id": "U005", "name": "Windows多进程限制", "label": "Cause",
+     "description": "Windows 的 multiprocessing 机制与 Linux 不同，DataLoader 多进程需要特殊处理。"},
+    {"id": "U006", "name": "模型结构变更", "label": "Cause",
+     "description": "保存 state_dict 后修改了模型定义（增删层），导致加载时 keys 不匹配。"},
+    {"id": "U007", "name": "加载不信任来源的模型文件", "label": "Cause",
+     "description": "torch.load 使用 pickle，恶意构造的 .pth 文件可能执行任意代码。"},
+    {"id": "U008", "name": "target类型错误", "label": "Cause",
+     "description": "CrossEntropyLoss 期望 target 为 LongTensor，但传入了 FloatTensor 或其他类型。"},
+
+    # ---- Command 节点 ----
+    {"id": "M001", "name": "检查CUDA驱动", "label": "Command",
+     "command": "nvidia-smi",
+     "description": "查看 NVIDIA 驱动版本、CUDA 版本和 GPU 显存使用情况。"},
+    {"id": "M002", "name": "检查PyTorch版本", "label": "Command",
+     "command": "python -c \"import torch; print(torch.__version__); print(torch.version.cuda); print(torch.cuda.is_available())\"",
+     "description": "一键检查 PyTorch 版本、CUDA 版本和 GPU 可用性。"},
+    {"id": "M003", "name": "安装PyTorch CUDA版本", "label": "Command",
+     "command": "pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118",
+     "description": "安装 CUDA 11.8 版本的 PyTorch。请根据实际 CUDA 版本选择合适的 index-url。"},
+    {"id": "M004", "name": "查看GPU显存使用", "label": "Command",
+     "command": "python -c \"import torch; print(f'Allocated: {torch.cuda.memory_allocated()/1e9:.2f} GB'); print(f'Reserved: {torch.cuda.memory_reserved()/1e9:.2f} GB')\"",
+     "description": "查看 PyTorch 当前分配的 GPU 显存量。"},
+
+    # ---- DocPage 节点 ----
+    {"id": "D001", "name": "PyTorch Get Started Locally", "label": "DocPage",
+     "url": "https://pytorch.org/get-started/locally/",
+     "description": "PyTorch 官方安装指南，包含 pip/conda 安装命令和 CUDA 版本选择。"},
+    {"id": "D002", "name": "torch.utils.data Documentation", "label": "DocPage",
+     "url": "https://pytorch.org/docs/stable/data.html",
+     "description": "DataLoader 和 Dataset 的官方 API 文档。"},
+    {"id": "D003", "name": "Saving and Loading Models Tutorial", "label": "DocPage",
+     "url": "https://pytorch.org/tutorials/beginner/saving_loading_models.html",
+     "description": "官方模型保存与加载教程。"},
+    {"id": "D004", "name": "Serialization Semantics", "label": "DocPage",
+     "url": "https://pytorch.org/docs/stable/notes/serialization.html",
+     "description": "PyTorch 序列化语义文档，详细说明 torch.load 的安全注意事项。"},
+    {"id": "D005", "name": "CrossEntropyLoss Documentation", "label": "DocPage",
+     "url": "https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html",
+     "description": "CrossEntropyLoss 的官方 API 文档。"},
+    {"id": "D006", "name": "CUDA Memory Management", "label": "DocPage",
+     "url": "https://pytorch.org/docs/stable/torch_cuda_memory.html",
+     "description": "PyTorch CUDA 显存管理官方文档。"},
+
+    # ---- CodeExample 节点 ----
+    {"id": "X001", "name": "检查CUDA可用性", "label": "CodeExample",
+     "code": "import torch\nprint(torch.cuda.is_available())\nprint(torch.version.cuda)\nprint(torch.cuda.get_device_name(0))",
+     "description": "检查 PyTorch 是否能检测到 GPU 及 CUDA 版本。"},
+    {"id": "X002", "name": "DataLoader基本用法", "label": "CodeExample",
+     "code": "from torch.utils.data import DataLoader, TensorDataset\nimport torch\n\ndata = torch.randn(100, 3, 32, 32)\nlabels = torch.randint(0, 10, (100,))\ndataset = TensorDataset(data, labels)\nloader = DataLoader(dataset, batch_size=16, shuffle=True, num_workers=2)",
+     "description": "DataLoader 基本使用示例。"},
+    {"id": "X003", "name": "保存和加载模型state_dict", "label": "CodeExample",
+     "code": "# 保存\ntorch.save(model.state_dict(), 'model_weights.pth')\n# 加载\nmodel = MyModel()\nmodel.load_state_dict(torch.load('model_weights.pth'))\nmodel.eval()",
+     "description": "使用 state_dict 保存和加载模型。"},
+    {"id": "X004", "name": "正确使用CrossEntropyLoss", "label": "CodeExample",
+     "code": "import torch\nimport torch.nn as nn\n\nloss_fn = nn.CrossEntropyLoss()\nlogits = torch.randn(32, 10)  # (batch_size, num_classes)\ntarget = torch.randint(0, 10, (32,)).long()  # (batch_size,) LongTensor\nloss = loss_fn(logits, target)\nprint(loss)",
+     "description": "CrossEntropyLoss 正确输入格式示例。"},
+    {"id": "X005", "name": "使用AMP混合精度训练", "label": "CodeExample",
+     "code": "from torch.cuda.amp import autocast, GradScaler\n\nscaler = GradScaler()\nfor data, target in loader:\n    optimizer.zero_grad()\n    with autocast():\n        output = model(data)\n        loss = loss_fn(output, target)\n    scaler.scale(loss).backward()\n    scaler.step(optimizer)\n    scaler.update()",
+     "description": "自动混合精度训练示例，减少显存占用。"},
+]
+
+# ==========================================
+# 种子边
+# ==========================================
+SEED_EDGES = [
+    # P001: CUDA不可用
+    {"source": "P001", "relation": "HAS_API", "target": "A001", "evidence": "torch.cuda.is_available() is the main API to check CUDA", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "P001", "relation": "HAS_API", "target": "A002", "evidence": "torch.version.cuda returns CUDA version used to build PyTorch", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "P001", "relation": "HAS_CAUSE", "target": "U001", "evidence": "If NVIDIA driver is not installed, CUDA cannot work", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "P001", "relation": "HAS_CAUSE", "target": "U002", "evidence": "pip install torch may install CPU-only version", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "P001", "relation": "HAS_SOLUTION", "target": "S001", "evidence": "Check driver with nvidia-smi and PyTorch CUDA version", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "P001", "relation": "HAS_SOLUTION", "target": "S002", "evidence": "Reinstall PyTorch with --index-url for CUDA version", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "P001", "relation": "CHECK_BY", "target": "M001", "evidence": "nvidia-smi checks driver and CUDA version", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "P001", "relation": "CHECK_BY", "target": "M002", "evidence": "python command to check PyTorch CUDA status", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "P001", "relation": "HAS_EXAMPLE", "target": "X001", "evidence": "Code example to check CUDA availability", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "P001", "relation": "MENTIONED_IN", "target": "D001", "evidence": "Official PyTorch installation guide", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "P001", "relation": "SIMILAR_TO", "target": "P003", "evidence": "Both related to CUDA availability issues", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "P001", "relation": "RELATED_TO", "target": "C009", "evidence": "CUDA is the underlying technology", "source_doc": "PyTorch Get Started Locally"},
+
+    # P002: CUDA显存不足
+    {"source": "P002", "relation": "HAS_API", "target": "A003", "evidence": "torch.cuda.empty_cache() frees cached memory", "source_doc": "CUDA Memory Management"},
+    {"source": "P002", "relation": "HAS_API", "target": "A004", "evidence": "torch.cuda.memory_allocated() checks allocated memory", "source_doc": "CUDA Memory Management"},
+    {"source": "P002", "relation": "HAS_API", "target": "A005", "evidence": "torch.cuda.memory_summary() prints detailed memory report", "source_doc": "CUDA Memory Management"},
+    {"source": "P002", "relation": "HAS_CAUSE", "target": "U003", "evidence": "batch_size too large causes OOM", "source_doc": "CUDA Memory Management"},
+    {"source": "P002", "relation": "HAS_CAUSE", "target": "U004", "evidence": "Memory leak from undetached tensors", "source_doc": "CUDA Memory Management"},
+    {"source": "P002", "relation": "HAS_SOLUTION", "target": "S003", "evidence": "Reduce batch_size to fit GPU memory", "source_doc": "CUDA Memory Management"},
+    {"source": "P002", "relation": "HAS_SOLUTION", "target": "S004", "evidence": "Use torch.cuda.empty_cache() to clean cache", "source_doc": "CUDA Memory Management"},
+    {"source": "P002", "relation": "HAS_SOLUTION", "target": "S005", "evidence": "Use AMP to reduce memory usage", "source_doc": "CUDA Memory Management"},
+    {"source": "P002", "relation": "HAS_SOLUTION", "target": "S006", "evidence": "Gradient checkpointing trades compute for memory", "source_doc": "CUDA Memory Management"},
+    {"source": "P002", "relation": "HAS_ERROR", "target": "E001", "evidence": "CUDA out of memory is the primary error", "source_doc": "CUDA Memory Management"},
+    {"source": "P002", "relation": "MENTIONED_IN", "target": "D006", "evidence": "Official CUDA memory management docs", "source_doc": "CUDA Memory Management"},
+    {"source": "P002", "relation": "RELATED_TO", "target": "C005", "evidence": "pin_memory affects GPU memory transfer", "source_doc": "torch.utils.data"},
+    {"source": "P002", "relation": "RELATED_TO", "target": "C010", "evidence": "AMP reduces memory usage significantly", "source_doc": "CUDA Memory Management"},
+    {"source": "P002", "relation": "HAS_EXAMPLE", "target": "X005", "evidence": "AMP training example", "source_doc": "CUDA Memory Management"},
+
+    # P003: PyTorch安装版本问题
+    {"source": "P003", "relation": "HAS_CAUSE", "target": "U002", "evidence": "Default pip install may be CPU-only", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "P003", "relation": "HAS_SOLUTION", "target": "S002", "evidence": "Use --index-url to specify CUDA version", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "P003", "relation": "CHECK_BY", "target": "M003", "evidence": "Install command with correct index-url", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "P003", "relation": "MENTIONED_IN", "target": "D001", "evidence": "Official installation guide", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "P003", "relation": "SIMILAR_TO", "target": "P001", "evidence": "Both involve CUDA/non-CUDA issues", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "P003", "relation": "RELATED_TO", "target": "C009", "evidence": "CUDA is the core dependency", "source_doc": "PyTorch Get Started Locally"},
+
+    # P004: DataLoader参数问题
+    {"source": "P004", "relation": "HAS_API", "target": "A009", "evidence": "DataLoader is the core data loading API", "source_doc": "torch.utils.data"},
+    {"source": "P004", "relation": "HAS_PARAMETER", "target": "C003", "evidence": "num_workers controls multiprocessing", "source_doc": "torch.utils.data"},
+    {"source": "P004", "relation": "HAS_PARAMETER", "target": "C004", "evidence": "batch_size controls batch size", "source_doc": "torch.utils.data"},
+    {"source": "P004", "relation": "HAS_PARAMETER", "target": "C005", "evidence": "pin_memory speeds up GPU transfer", "source_doc": "torch.utils.data"},
+    {"source": "P004", "relation": "HAS_PARAMETER", "target": "C008", "evidence": "shuffle randomizes data order", "source_doc": "torch.utils.data"},
+    {"source": "P004", "relation": "CHECK_BY", "target": "M004", "evidence": "Check GPU memory usage", "source_doc": "CUDA Memory Management"},
+    {"source": "P004", "relation": "MENTIONED_IN", "target": "D002", "evidence": "Official DataLoader docs", "source_doc": "torch.utils.data"},
+    {"source": "P004", "relation": "HAS_EXAMPLE", "target": "X002", "evidence": "DataLoader usage example", "source_doc": "torch.utils.data"},
+    {"source": "P004", "relation": "SIMILAR_TO", "target": "P005", "evidence": "Both are DataLoader issues", "source_doc": "torch.utils.data"},
+
+    # P005: DataLoader多进程问题
+    {"source": "P005", "relation": "HAS_API", "target": "A009", "evidence": "DataLoader multiprocessing", "source_doc": "torch.utils.data"},
+    {"source": "P005", "relation": "HAS_PARAMETER", "target": "C003", "evidence": "num_workers triggers multiprocessing", "source_doc": "torch.utils.data"},
+    {"source": "P005", "relation": "HAS_CAUSE", "target": "U005", "evidence": "Windows multiprocessing differs from Linux", "source_doc": "torch.utils.data"},
+    {"source": "P005", "relation": "HAS_SOLUTION", "target": "S007", "evidence": "Set num_workers=0 or use if __name__=='__main__'", "source_doc": "torch.utils.data"},
+    {"source": "P005", "relation": "HAS_ERROR", "target": "E003", "evidence": "BrokenPipeError on Windows", "source_doc": "torch.utils.data"},
+    {"source": "P005", "relation": "MENTIONED_IN", "target": "D002", "evidence": "Official DataLoader documentation", "source_doc": "torch.utils.data"},
+    {"source": "P005", "relation": "SIMILAR_TO", "target": "P004", "evidence": "Both are DataLoader issues", "source_doc": "torch.utils.data"},
+
+    # P006: 模型保存问题
+    {"source": "P006", "relation": "HAS_API", "target": "A006", "evidence": "torch.save serializes objects", "source_doc": "Saving and Loading Models"},
+    {"source": "P006", "relation": "HAS_SOLUTION", "target": "S008", "evidence": "Use state_dict instead of saving entire model", "source_doc": "Saving and Loading Models"},
+    {"source": "P006", "relation": "RELATED_TO", "target": "C001", "evidence": "state_dict is the recommended save format", "source_doc": "Saving and Loading Models"},
+    {"source": "P006", "relation": "MENTIONED_IN", "target": "D003", "evidence": "Official save/load tutorial", "source_doc": "Saving and Loading Models"},
+    {"source": "P006", "relation": "HAS_EXAMPLE", "target": "X003", "evidence": "Save and load state_dict example", "source_doc": "Saving and Loading Models"},
+    {"source": "P006", "relation": "SIMILAR_TO", "target": "P007", "evidence": "Save and load are complementary", "source_doc": "Saving and Loading Models"},
+
+    # P007: 模型加载问题
+    {"source": "P007", "relation": "HAS_API", "target": "A007", "evidence": "torch.load deserializes objects", "source_doc": "Saving and Loading Models"},
+    {"source": "P007", "relation": "HAS_API", "target": "A010", "evidence": "load_state_dict loads weights into model", "source_doc": "Saving and Loading Models"},
+    {"source": "P007", "relation": "HAS_PARAMETER", "target": "C006", "evidence": "map_location controls device placement", "source_doc": "Saving and Loading Models"},
+    {"source": "P007", "relation": "HAS_SOLUTION", "target": "S009", "evidence": "Use map_location for cross-device loading", "source_doc": "Saving and Loading Models"},
+    {"source": "P007", "relation": "MENTIONED_IN", "target": "D003", "evidence": "Official save/load tutorial", "source_doc": "Saving and Loading Models"},
+    {"source": "P007", "relation": "SIMILAR_TO", "target": "P006", "evidence": "Save and load are complementary", "source_doc": "Saving and Loading Models"},
+    {"source": "P007", "relation": "SIMILAR_TO", "target": "P008", "evidence": "state_dict mismatch is a common loading issue", "source_doc": "Saving and Loading Models"},
+
+    # P008: state_dict不匹配
+    {"source": "P008", "relation": "HAS_API", "target": "A010", "evidence": "load_state_dict triggers the mismatch error", "source_doc": "Saving and Loading Models"},
+    {"source": "P008", "relation": "HAS_CAUSE", "target": "U006", "evidence": "Model structure changed after saving", "source_doc": "Saving and Loading Models"},
+    {"source": "P008", "relation": "HAS_SOLUTION", "target": "S010", "evidence": "Use strict=False to ignore mismatched keys", "source_doc": "Saving and Loading Models"},
+    {"source": "P008", "relation": "HAS_ERROR", "target": "E004", "evidence": "Error(s) in loading state_dict", "source_doc": "Saving and Loading Models"},
+    {"source": "P008", "relation": "RELATED_TO", "target": "C001", "evidence": "state_dict is the core concept", "source_doc": "Saving and Loading Models"},
+    {"source": "P008", "relation": "MENTIONED_IN", "target": "D003", "evidence": "Official save/load tutorial", "source_doc": "Saving and Loading Models"},
+
+    # P009: torch.load安全问题
+    {"source": "P009", "relation": "HAS_API", "target": "A007", "evidence": "torch.load uses pickle under the hood", "source_doc": "Serialization Semantics"},
+    {"source": "P009", "relation": "HAS_PARAMETER", "target": "C007", "evidence": "weights_only parameter controls security", "source_doc": "Serialization Semantics"},
+    {"source": "P009", "relation": "HAS_CAUSE", "target": "U007", "evidence": "Pickle deserialization can execute arbitrary code", "source_doc": "Serialization Semantics"},
+    {"source": "P009", "relation": "HAS_SOLUTION", "target": "S011", "evidence": "Use weights_only=True for safe loading", "source_doc": "Serialization Semantics"},
+    {"source": "P009", "relation": "MENTIONED_IN", "target": "D004", "evidence": "Official serialization semantics doc", "source_doc": "Serialization Semantics"},
+
+    # P010: CrossEntropyLoss输入问题
+    {"source": "P010", "relation": "HAS_API", "target": "A008", "evidence": "CrossEntropyLoss is the main classification loss", "source_doc": "CrossEntropyLoss Documentation"},
+    {"source": "P010", "relation": "HAS_CAUSE", "target": "U008", "evidence": "target must be LongTensor, not FloatTensor", "source_doc": "CrossEntropyLoss Documentation"},
+    {"source": "P010", "relation": "HAS_SOLUTION", "target": "S012", "evidence": "Convert target to LongTensor with .long()", "source_doc": "CrossEntropyLoss Documentation"},
+    {"source": "P010", "relation": "HAS_ERROR", "target": "E005", "evidence": "expected scalar type Long but found Float", "source_doc": "CrossEntropyLoss Documentation"},
+    {"source": "P010", "relation": "MENTIONED_IN", "target": "D005", "evidence": "Official CrossEntropyLoss API docs", "source_doc": "CrossEntropyLoss Documentation"},
+    {"source": "P010", "relation": "HAS_EXAMPLE", "target": "X004", "evidence": "Correct CrossEntropyLoss usage example", "source_doc": "CrossEntropyLoss Documentation"},
+
+    # 额外关系
+    {"source": "A001", "relation": "RELATED_TO", "target": "A002", "evidence": "Both are CUDA-related checks", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "A003", "relation": "RELATED_TO", "target": "A004", "evidence": "Both are memory management APIs", "source_doc": "CUDA Memory Management"},
+    {"source": "A006", "relation": "RELATED_TO", "target": "A007", "evidence": "save and load are paired operations", "source_doc": "Saving and Loading Models"},
+    {"source": "C001", "relation": "RELATED_TO", "target": "A006", "evidence": "model.state_dict() is used with torch.save", "source_doc": "Saving and Loading Models"},
+    {"source": "C001", "relation": "RELATED_TO", "target": "A010", "evidence": "state_dict is loaded via load_state_dict", "source_doc": "Saving and Loading Models"},
+    {"source": "C002", "relation": "RELATED_TO", "target": "A009", "evidence": "DataLoader is the implementation", "source_doc": "torch.utils.data"},
+    {"source": "C003", "relation": "RELATED_TO", "target": "U005", "evidence": "num_workers triggers Windows limitation", "source_doc": "torch.utils.data"},
+    {"source": "C007", "relation": "RELATED_TO", "target": "U007", "evidence": "weights_only mitigates pickle attack", "source_doc": "Serialization Semantics"},
+    {"source": "C010", "relation": "RELATED_TO", "target": "S005", "evidence": "AMP is the solution for memory reduction", "source_doc": "CUDA Memory Management"},
+    {"source": "C009", "relation": "RELATED_TO", "target": "E002", "evidence": "No CUDA device causes this error", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "S008", "relation": "RELATED_TO", "target": "C001", "evidence": "state_dict is the recommended approach", "source_doc": "Saving and Loading Models"},
+    {"source": "E001", "relation": "RELATED_TO", "target": "S003", "evidence": "OOM often requires batch_size reduction", "source_doc": "CUDA Memory Management"},
+    {"source": "E005", "relation": "RELATED_TO", "target": "S012", "evidence": "Fix dtype by converting to LongTensor", "source_doc": "CrossEntropyLoss Documentation"},
+    {"source": "U001", "relation": "RELATED_TO", "target": "M001", "evidence": "nvidia-smi checks driver status", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "U002", "relation": "RELATED_TO", "target": "M003", "evidence": "Reinstall with correct CUDA version", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "S005", "relation": "RELATED_TO", "target": "C010", "evidence": "AMP enables mixed precision", "source_doc": "CUDA Memory Management"},
+    {"source": "X005", "relation": "RELATED_TO", "target": "S005", "evidence": "Example of AMP solution", "source_doc": "CUDA Memory Management"},
+
+    # 错误与问题的关联
+    {"source": "E001", "relation": "RELATED_TO", "target": "P002", "evidence": "OOM is the main error for memory issues", "source_doc": "CUDA Memory Management"},
+    {"source": "E002", "relation": "RELATED_TO", "target": "P001", "evidence": "No CUDA device is a CUDA problem", "source_doc": "PyTorch Get Started Locally"},
+    {"source": "E003", "relation": "RELATED_TO", "target": "P005", "evidence": "BrokenPipeError relates to DataLoader multiprocessing", "source_doc": "torch.utils.data"},
+    {"source": "E004", "relation": "RELATED_TO", "target": "P008", "evidence": "Loading error relates to state_dict mismatch", "source_doc": "Saving and Loading Models"},
+    {"source": "E005", "relation": "RELATED_TO", "target": "P010", "evidence": "dtype mismatch relates to CrossEntropyLoss", "source_doc": "CrossEntropyLoss Documentation"},
+]
+
+
+def build_graph(extracted_triples: list = None, output_path: str = None) -> dict:
+    """
+    构建最终知识图谱
+
+    Args:
+        extracted_triples: 规则和大模型抽取的三元组（可选，暂时未使用）
+        output_path: 输出 JSON 路径
+
+    Returns:
+        dict: 完整图谱 {"nodes": [...], "edges": [...]}
+    """
+    if output_path is None:
+        output_path = get_data_path("pytorch_kg.json")
+
+    # 合并所有节点并去重
+    all_nodes = list(SEED_NODES)
+    node_ids = {n["id"] for n in all_nodes}
+
+    # 如果提供了抽取结果，合并
+    if extracted_triples:
+        for triple in extracted_triples:
+            # 简单的增量节点创建（实际使用时需要更复杂的合并逻辑）
+            pass
+
+    # 合并所有边并去重
+    all_edges = list(SEED_EDGES)
+    seen_edges = set()
+    deduped_edges = []
+
+    for edge in all_edges:
+        key = (edge["source"], edge["relation"], edge["target"])
+        if key not in seen_edges:
+            seen_edges.add(key)
+            deduped_edges.append(edge)
+
+    graph = {
+        "nodes": all_nodes,
+        "edges": deduped_edges,
+    }
+
+    # 写入 JSON
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(graph, f, ensure_ascii=False, indent=2)
+
+    print(f"[GraphBuilder] 图谱已生成: {len(all_nodes)} 节点, {len(deduped_edges)} 条边")
+    print(f"[GraphBuilder] 输出: {output_path}")
+
+    return graph

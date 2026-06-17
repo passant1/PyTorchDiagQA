@@ -1,0 +1,33 @@
+# PyTorch 智能报错诊断问答系统配置文件
+# ==========================================
+
+# 大模型 API 配置 (OpenAI 兼容接口)
+llm:
+  api_key: ""  # 请通过环境变量 API_KEY/LLM_API_KEY 或本地 .env 配置真实 Key，不要提交明文密钥
+  base_url: "https://api.deepseek.com"
+  model_name: "deepseek-v4-flash"
+  temperature: 0.3
+  max_tokens: 1024
+  enable_llm: true  # 是否启用大模型
+
+# FAQ 检索配置
+faq:
+  threshold: 0.15  # 余弦相似度阈值，低于此值触发兜底
+  top_k: 3  # 返回 top-k 个匹配结果
+
+# RAG 检索配置
+rag:
+  threshold: 0.08
+  top_k: 8
+
+# 知识图谱配置
+kg:
+  file: "data/pytorch_kg.json"
+
+# 服务器配置
+server:
+  host: "127.0.0.1"
+  port: 18888
+
+# 调试模式
+debug: true

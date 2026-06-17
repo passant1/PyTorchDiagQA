@@ -1,0 +1,90 @@
+实验三：基于 CNN/RNN 的中文文本分类
+数据集：1998 年人民日报分词标注语料 199801-199806 关键词弱标注抽样
+模型：PyTorch TextCNN
+类别：体育, 教育, 科技
+训练集数量：135
+测试集数量：45
+词表大小：1180
+每轮训练 loss 和 accuracy：
+Epoch 01: loss=1.1967, train_accuracy=0.3481
+Epoch 02: loss=1.0053, train_accuracy=0.4963
+Epoch 03: loss=0.7767, train_accuracy=0.7037
+Epoch 04: loss=0.5412, train_accuracy=0.9407
+Epoch 05: loss=0.5352, train_accuracy=0.8370
+Epoch 06: loss=0.4049, train_accuracy=0.8963
+Epoch 07: loss=0.3007, train_accuracy=0.9556
+Epoch 08: loss=0.2099, train_accuracy=0.9852
+Epoch 09: loss=0.1995, train_accuracy=0.9926
+Epoch 10: loss=0.1606, train_accuracy=0.9630
+Epoch 11: loss=0.1143, train_accuracy=1.0000
+Epoch 12: loss=0.0768, train_accuracy=0.9926
+Epoch 13: loss=0.0733, train_accuracy=0.9852
+Epoch 14: loss=0.0756, train_accuracy=0.9852
+Epoch 15: loss=0.0485, train_accuracy=0.9926
+Epoch 16: loss=0.0317, train_accuracy=1.0000
+Epoch 17: loss=0.0318, train_accuracy=0.9926
+Epoch 18: loss=0.0168, train_accuracy=1.0000
+Epoch 19: loss=0.0248, train_accuracy=1.0000
+Epoch 20: loss=0.0177, train_accuracy=0.9926
+Epoch 21: loss=0.0179, train_accuracy=0.9926
+Epoch 22: loss=0.0039, train_accuracy=1.0000
+Epoch 23: loss=0.0097, train_accuracy=1.0000
+Epoch 24: loss=0.0091, train_accuracy=1.0000
+Epoch 25: loss=0.0089, train_accuracy=1.0000
+Epoch 26: loss=0.0080, train_accuracy=1.0000
+Epoch 27: loss=0.0121, train_accuracy=0.9926
+Epoch 28: loss=0.0103, train_accuracy=1.0000
+Epoch 29: loss=0.0044, train_accuracy=1.0000
+Epoch 30: loss=0.0108, train_accuracy=1.0000
+Epoch 31: loss=0.0042, train_accuracy=1.0000
+Epoch 32: loss=0.0021, train_accuracy=1.0000
+Epoch 33: loss=0.0030, train_accuracy=1.0000
+Epoch 34: loss=0.0015, train_accuracy=1.0000
+Epoch 35: loss=0.0007, train_accuracy=1.0000
+Epoch 36: loss=0.0052, train_accuracy=1.0000
+Epoch 37: loss=0.0013, train_accuracy=1.0000
+Epoch 38: loss=0.0011, train_accuracy=1.0000
+Epoch 39: loss=0.0132, train_accuracy=0.9926
+Epoch 40: loss=0.0011, train_accuracy=1.0000
+Epoch 41: loss=0.0009, train_accuracy=1.0000
+Epoch 42: loss=0.0144, train_accuracy=0.9926
+Epoch 43: loss=0.0021, train_accuracy=1.0000
+Epoch 44: loss=0.0029, train_accuracy=1.0000
+Epoch 45: loss=0.0150, train_accuracy=0.9926
+Epoch 46: loss=0.0010, train_accuracy=1.0000
+Epoch 47: loss=0.0043, train_accuracy=1.0000
+Epoch 48: loss=0.0016, train_accuracy=1.0000
+Epoch 49: loss=0.0018, train_accuracy=1.0000
+Epoch 50: loss=0.0015, train_accuracy=1.0000
+Epoch 51: loss=0.0021, train_accuracy=1.0000
+Epoch 52: loss=0.0010, train_accuracy=1.0000
+Epoch 53: loss=0.0036, train_accuracy=1.0000
+Epoch 54: loss=0.0021, train_accuracy=1.0000
+Epoch 55: loss=0.0004, train_accuracy=1.0000
+Epoch 56: loss=0.0013, train_accuracy=1.0000
+Epoch 57: loss=0.0013, train_accuracy=1.0000
+Epoch 58: loss=0.0005, train_accuracy=1.0000
+Epoch 59: loss=0.0020, train_accuracy=1.0000
+Epoch 60: loss=0.0003, train_accuracy=1.0000
+
+测试集 accuracy：0.7778
+
+分类报告：
+              precision    recall  f1-score   support
+
+          体育       0.74      0.93      0.82        15
+          教育       0.80      0.80      0.80        15
+          科技       0.82      0.60      0.69        15
+
+    accuracy                           0.78        45
+   macro avg       0.79      0.78      0.77        45
+weighted avg       0.79      0.78      0.77        45
+
+混淆矩阵：
+[[14  1  0]
+ [ 1 12  2]
+ [ 4  2  9]]
+
+图表文件：
+outputs/exp3_loss_curve.png
+outputs/exp3_confusion_matrix.png
